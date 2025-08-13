@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       fontFamily: {
@@ -21,10 +21,10 @@ content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
         textGreen: '#1E7460',    // tulisan hijau
         textGrayDark: '#4B4B4B', // abu tua
         textGrayLight: '#B3B3B3',// abu muda
-        buttonAlt: '#F1FFF9',    // kotak tombol lain
-        pageBg: '#FFFFFF',       // warna halaman putih
-      }
-    }
+        buttonAlt: '#F1FFF9',    // tombol alternatif
+        pageBg: '#FFFFFF',       // warna halaman
+      },
+    },
   },
   plugins: [],
 }

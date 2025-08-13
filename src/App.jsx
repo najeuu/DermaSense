@@ -1,9 +1,8 @@
-
 function App() {
 
   return (
     <>
-      <h1 className="font-poppins text-3xl font-bold text-l">Hello</h1>
+      <h1 className="text-3xl font-bold font-poppins text-loginBox">Hello</h1>
     </>
   )
 }
