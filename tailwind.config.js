@@ -3,26 +3,17 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
-      fontFamily: {
-        poppins: ['Poppins', 'sans-serif'],
-      },
-      fontWeight: {
-        light: 300,
-        normal: 400,
-        medium: 500,
-        bold: 700,
-      },
       colors: {
-        primary: '#32C2A0',      // judul & tombol utama
-        loginBox: '#D6FFED',     // kotak login & register
-        solutionBox: '#1E7460',  // area solution
-        textPink: '#F4426F',     // tulisan warna pink
-        textDark: '#333333',     // tulisan gelap
-        textGreen: '#1E7460',    // tulisan hijau
-        textGrayDark: '#4B4B4B', // abu tua
-        textGrayLight: '#B3B3B3',// abu muda
-        buttonAlt: '#F1FFF9',    // tombol alternatif
-        pageBg: '#FFFFFF',       // warna halaman
+        primary: '#32C2A0',      // untuk judul & tombol utama
+        secondary: '#757575',     // untuk teks biasa
+        textPink: '#F4426F',      // untuk link Sign Up / highlight
+        solutionBox: '#1E7460',   // area solution
+        textDark: '#333333',      // teks gelap (opsional)
+        textGreen: '#1E7460',     // teks hijau
+        textGrayDark: '#4B4B4B',  // teks abu tua
+        textGrayLight: '#B3B3B3', // teks abu muda
+        buttonAlt: '#F1FFF9',     // tombol alternatif
+        pageBg: '#FFFFFF',        // warna halaman
       },
     },
   },
