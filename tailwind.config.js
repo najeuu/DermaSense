@@ -15,6 +15,20 @@ export default {
         buttonAlt: '#F1FFF9',     // tombol alternatif
         pageBg: '#FFFFFF',        // warna halaman
       },
+      keyframes: {
+        slideInLeft: {
+          '0%': { transform: 'translateX(-50px)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+        slideInRight: {
+          '0%': { transform: 'translateX(50px)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+      },
+      animation: {
+        slideInLeft: 'slideInLeft 0.6s ease-out forwards',
+        slideInRight: 'slideInRight 0.6s ease-out forwards',
+      },
     },
   },
   plugins: [],

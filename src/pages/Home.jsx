@@ -1,9 +1,14 @@
-// src/pages/Home.jsx
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import heroImage from '../assets/images/Home.png';
 import { ArrowUpRight } from 'lucide-react';
+import atopikImage from '../assets/images/atopik.jpg';
+import scanImage from '../assets/images/scan.jpg';
+import article1 from '../assets/images/article1.jpg';
+import article2 from '../assets/images/article2.jpg';
+import article3 from '../assets/images/article3.jpg';
+
 
 const Home = () => {
   return (
@@ -24,19 +29,19 @@ const Home = () => {
           </h1>
 
           <a
-  href="#main-fitur"
-  onClick={(e) => {
-    e.preventDefault();
-    const section = document.getElementById("main-fitur");
-    if (section) {
-      section.scrollIntoView({ behavior: "smooth" });
-    }
-  }}
-  className="inline-flex items-center justify-center gap-2 w-[180px] sm:w-[200px] md:w-[220px] h-[36px] rounded-[6px] bg-white text-primary font-semibold text-sm hover:bg-gray-100 transition"
->
-  Swipe Up Sekarang
-  <ArrowUpRight size={18} className="text-primary" />
-</a>
+            href="#main-fitur"
+            onClick={(e) => {
+              e.preventDefault();
+              const section = document.getElementById("main-fitur");
+              if (section) {
+                section.scrollIntoView({ behavior: "smooth" });
+              }
+            }}
+            className="inline-flex items-center justify-center gap-2 w-[180px] sm:w-[200px] md:w-[220px] h-[36px] rounded-[6px] bg-white text-primary font-semibold text-sm hover:bg-gray-100 transition"
+          >
+            Swipe Up Sekarang
+            <ArrowUpRight size={18} className="text-primary" />
+          </a>
 
         </div>
       </section>
@@ -55,10 +60,11 @@ const Home = () => {
           {/* Kotak Dermatologist */}
           <div className="bg-white rounded-[14px] shadow hover:shadow-lg transition overflow-hidden w-full sm:w-[456px]">
             <img
-              src="/images/dermatologist.jpg"
+              src={atopikImage}
               alt="Dermatologist Atopic"
               className="w-full h-48 object-cover"
             />
+
             <div className="p-5 flex flex-col justify-between h-[192px] sm:h-[192px]">
               <div>
                 <h4 className="font-semibold mb-2 text-textDark">Dermatologist Atopic</h4>
@@ -78,7 +84,7 @@ const Home = () => {
           {/* Kotak Skin Scan */}
           <div className="bg-white rounded-[14px] shadow hover:shadow-lg transition overflow-hidden w-full sm:w-[456px]">
             <img
-              src="/images/skinscan.jpg"
+              src={scanImage}
               alt="Skin Scan"
               className="w-full h-48 object-cover"
             />
@@ -107,21 +113,21 @@ const Home = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 justify-center max-w-[1200px] mx-auto px-2 sm:px-4">
           {[
             {
-              image: '/images/article1.jpg',
+              image: article1,
               category: 'Skin Healthy',
               title: 'Chai-biscuit morning habit is killing your gut health says health coach',
               author: 'Jerome Bell',
               date: 'November 7, 2017'
             },
             {
-              image: '/images/article2.jpg',
+              image: article2,
               category: 'Skin Healthy',
               title: 'Dokter Spesialis UGM Beri Tips Cegah Penularan Penyakit Kulit dari Pembelian Baju Bekas',
               author: 'Jerome Bell',
               date: 'November 7, 2017'
             },
             {
-              image: '/images/article3.jpg',
+              image: article3,
               category: 'Skin Healthy',
               title: 'Unilever Indonesia Hadirkan Sains dan Teknologi untuk Kesehatan Kulit dan Kulit Kepala',
               author: 'Jerome Bell',

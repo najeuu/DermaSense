@@ -1,4 +1,3 @@
-// src/pages/Login.jsx
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -15,17 +14,19 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="flex w-full max-w-4xl shadow-lg rounded-[21px] overflow-hidden flex-col md:flex-row">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6">
+      <div className="bg-white shadow-lg rounded-[21px] overflow-hidden w-full max-w-5xl flex flex-col md:flex-row transition-all duration-500">
 
         {/* Left Form */}
-        <div className="w-full md:w-1/2 bg-white p-10 flex flex-col justify-center items-center rounded-[21px]">
-          <h1 className="text-3xl font-bold text-primary mb-4 text-center">Login!</h1>
-          <p className="text-secondary mb-8 text-center">
+        <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-center items-center md:items-start rounded-[21px]">
+          <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2 text-center md:text-left">
+            Login!
+          </h1>
+          <p className="text-secondary mb-6 text-sm md:text-base text-center md:text-left">
             Selamat datang di page login, silahkan isi username dan juga password.
           </p>
 
-          <form onSubmit={handleLogin} className="space-y-5 w-full max-w-[507px] flex flex-col items-center">
+          <form onSubmit={handleLogin} className="space-y-4 flex flex-col items-center md:items-start w-full max-w-[507px]">
             <input
               type="text"
               placeholder="Username"
@@ -34,6 +35,7 @@ const Login = () => {
               className="w-full border border-gray-300 rounded-[21px] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
               required
             />
+
             <div className="relative w-full">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -64,7 +66,7 @@ const Login = () => {
             </button>
           </form>
 
-          <p className="text-center text-secondary mt-4">
+          <p className="text-secondary mt-6 w-full text-center md:text-left">
             Don’t have an account?{' '}
             <Link to="/register" className="text-textPink font-medium hover:underline">
               Sign Up Now
@@ -72,9 +74,13 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Right Illustration */}
-        <div className="w-full md:w-1/2 bg-[#D6FFED] flex flex-col items-center justify-center p-10 rounded-[21px]">
-          <img src={loginIllustration} alt="Login Illustration" className="w-full h-auto object-contain mb-4 max-w-xs md:max-w-sm rounded-[21px]" />
+        {/* Right Konten: hanya tampil di desktop */}
+        <div className="hidden md:flex w-full md:w-1/2 bg-[#D6FFED] flex-col items-center justify-center p-10 rounded-[21px]">
+          <img
+            src={loginIllustration}
+            alt="Login Illustration"
+            className="w-full h-auto object-contain mb-4 max-w-xs md:max-w-sm rounded-[21px]"
+          />
           <p className="text-secondary text-center">
             Silahkan login dulu ya teman-teman sebelum lanjut ke page{' '}
             <span className="font-semibold text-primary">selanjutnya</span>.

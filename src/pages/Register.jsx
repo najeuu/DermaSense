@@ -1,4 +1,3 @@
-// src/pages/Register.jsx
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -25,26 +24,31 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white rounded-[21px] shadow-lg overflow-hidden w-full max-w-5xl flex flex-col md:flex-row">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6">
+      <div className="bg-white rounded-[21px] shadow-lg overflow-hidden w-full max-w-5xl flex flex-col md:flex-row transition-all duration-500">
 
-        {/* Left Illustration */}
-        <div className="w-full md:w-1/2 bg-[#D6FFED] flex flex-col items-center justify-center p-6 md:p-8 rounded-[21px]">
-          <img src={registerIllustration} alt="Sign up illustration" className="max-w-xs md:max-w-sm rounded-[21px]" />
+        {/* Left Konten */}
+        <div className="w-full md:w-1/2 bg-[#D6FFED] flex flex-col items-center justify-center p-6 md:p-8 rounded-[21px] hidden md:flex">
+          <img
+            src={registerIllustration}
+            alt="Sign up illustration"
+            className="w-full max-w-[250px] md:max-w-sm rounded-[21px]"
+          />
           <p className="mt-6 text-center text-secondary text-sm md:text-base">
-            Silahkan sign up dulu ya teman-teman sebelum <br />
-            lanjut ke page <span className="font-semibold text-primary">selanjutnya</span>.
+            Silahkan sign up dulu sebelum <span className="font-semibold text-primary">lanjut ke page selanjutnya</span>.
           </p>
         </div>
 
         {/* Right Form */}
-        <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-center items-center rounded-[21px]">
-          <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2 text-center">Sign Up!</h1>
-          <p className="text-secondary mb-6 text-sm md:text-base text-center">
+        <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-center items-center rounded-[21px] text-center">
+          
+          {/* Judul & paragraf */}
+          <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2">Sign Up!</h1>
+          <p className="text-secondary mb-6 text-sm md:text-base">
             Selamat datang di page sign up, silahkan daftar menggunakan username dan juga password anda.
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-4 flex flex-col items-center w-full max-w-[507px]">
+          <form onSubmit={handleSubmit} className="space-y-4 flex flex-col items-center w-full">
             {/* Username */}
             <div className="relative w-full">
               <input
@@ -118,7 +122,8 @@ const Register = () => {
             </button>
           </form>
 
-          <p className="text-center text-secondary mt-6">
+          {/* Link login */}
+          <p className="text-secondary mt-6 w-full text-center">
             Have an account?{' '}
             <Link to="/login" className="text-textPink font-medium hover:underline">
               Login now
