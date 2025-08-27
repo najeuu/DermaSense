@@ -6,9 +6,7 @@ import profileImg from '../assets/images/profil.png';
 const Navbar = () => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
-
-  // nanti ganti ini ambil dari auth state
-  const isLoggedIn = true;
+  const [isLoggedIn] = useState(true); 
 
   const menuItems = [
     { name: 'Home', path: '/' },
@@ -19,26 +17,27 @@ const Navbar = () => {
   const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
-    <nav className="w-full bg-white shadow-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
-          
+    <nav className="sticky top-0 z-50 w-full bg-white shadow-md">
+      <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
           {/* Brand */}
           <div className="flex-shrink-0">
-            <Link to="/" className="text-primary font-bold text-2xl md:text-2xl">
+            <Link to="/" className="text-2xl font-bold text-primary md:text-2xl">
               DermaSense
             </Link>
           </div>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex space-x-8 relative">
+          <div className="relative hidden space-x-8 md:flex">
             {menuItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
                 <div key={item.name} className="relative">
                   <Link
                     to={item.path}
-                    className={`font-medium transition-colors ${isActive ? 'text-primary' : 'text-gray-400 hover:text-teal-500'}`}
+                    className={`font-medium transition-colors ${
+                      isActive ? 'text-primary' : 'text-gray-400 hover:text-teal-500'
+                    }`}
                   >
                     {item.name}
                   </Link>
@@ -51,7 +50,7 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Right Section */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="items-center hidden space-x-4 md:flex">
             {isLoggedIn ? (
               <>
                 <button className="text-gray-600 hover:text-primary">
@@ -60,7 +59,7 @@ const Navbar = () => {
                 <button className="text-gray-600 hover:text-primary">
                   <History size={20} />
                 </button>
-                <img src={profileImg} alt="User" className="w-8 h-8 rounded-full object-cover" />
+                <img src={profileImg} alt="User" className="object-cover w-8 h-8 rounded-full" />
               </>
             ) : (
               <>
@@ -81,7 +80,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Hamburger */}
-          <div className="md:hidden flex items-center">
+          <div className="flex items-center md:hidden">
             <button onClick={toggleMenu} className="text-primary focus:outline-none">
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -91,7 +90,7 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white shadow-md">
+        <div className="bg-white shadow-md md:hidden">
           <div className="px-4 pt-2 pb-4 space-y-2">
             {menuItems.map((item) => {
               const isActive = location.pathname === item.path;
@@ -111,7 +110,7 @@ const Navbar = () => {
 
             {/* Mobile Auth / Logged In */}
             {isLoggedIn ? (
-              <div className="flex items-center space-x-3 mt-3">
+              <div className="flex items-center mt-3 space-x-3">
                 <button className="text-gray-600 hover:text-primary">
                   <Bell size={20} />
                 </button>
@@ -119,13 +118,13 @@ const Navbar = () => {
                   <History size={20} />
                 </button>
                 <img
-                  src="/path/to/profile.jpg"
+                  src={profileImg}
                   alt="User"
-                  className="w-8 h-8 rounded-full object-cover"
+                  className="object-cover w-8 h-8 rounded-full"
                 />
               </div>
             ) : (
-              <div className="flex space-x-2 mt-2">
+              <div className="flex mt-2 space-x-2">
                 <Link
                   to="/login"
                   onClick={() => setIsOpen(false)}

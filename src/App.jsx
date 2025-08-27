@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Scan from './pages/Scan';
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
       <Routes>
         {/* Halaman utama sebelum login */}
         <Route path="/" element={<Home />} />
+        <Route path="/scan" element={<Scan />} />
         
         {/* Auth pages */}
         <Route path="/login" element={<Login />} />
