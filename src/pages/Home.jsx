@@ -8,6 +8,7 @@ import scanImage from '../assets/images/scan.jpg';
 import article1 from '../assets/images/article1.jpg';
 import article2 from '../assets/images/article2.jpg';
 import article3 from '../assets/images/article3.jpg';
+import { Link } from 'react-router-dom';
 
 
 const Home = () => {
