@@ -38,7 +38,7 @@ const Login = () => {
       console.log('Login success:', res.data);
       
       // Redirect setelah login sukses
-      navigate('/scan'); // bisa ganti '/home'
+      navigate('/');
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || 'Login failed');
