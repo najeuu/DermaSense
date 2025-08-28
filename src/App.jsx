@@ -1,29 +1,23 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Home from "./pages/Home.jsx";
-import Login from "./pages/Login.jsx";
-import Register from "./pages/Register.jsx";
-import Scan from "./pages/Scan.jsx";
-import Article from "./pages/Article.jsx";
-import DetailArticle from "./pages/ArticleDetail.jsx";
-import Profile from "./pages/Profile.jsx";
-import History from "./pages/History.jsx";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Scan from './pages/Scan';
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Public (semua bisa diakses) */}
+        {/* Halaman utama sebelum login */}
         <Route path="/" element={<Home />} />
+        <Route path="/scan" element={<Scan />} />
+        
+        {/* Auth pages */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/scan" element={<Scan />} />
-        <Route path="/article" element={<Article />} />
-        <Route path="/article/:id" element={<DetailArticle />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/history" element={<History />} />
 
-        {/* Fallback */}
+        {/* Jika path tidak cocok, redirect ke home */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
