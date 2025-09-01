@@ -19,16 +19,10 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Validasi email format
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  const validateEmail = (email) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  // Validasi password strength
-  const validatePassword = (password) => {
-    return password.length >= 6; // Minimal 6 karakter
-  };
+  const validatePassword = (password) => password.length >= 6;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,113 +32,76 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Reset error state
     setError("");
 
-    // Validasi form
-    if (
-      !formData.name.trim() ||
-      !formData.email.trim() ||
-      !formData.password ||
-      !formData.confirmPassword ||
-      !formData.age ||
-      !formData.gender
-    ) {
+    const { name, email, password, confirmPassword, age, gender } = formData;
+    const ageNum = parseInt(age, 10);
+
+    if (!name || !email || !password || !confirmPassword || !age || !gender) {
       setError("All fields are required");
       return;
     }
-
-    // Validasi email format
-    if (!validateEmail(formData.email)) {
+    if (!validateEmail(email)) {
       setError("Please enter a valid email address");
       return;
     }
-
-    // Validasi age
-    const ageNum = parseInt(formData.age, 10);
     if (isNaN(ageNum) || ageNum < 1 || ageNum > 120) {
       setError("Please enter a valid age between 1 and 120");
       return;
     }
-
-    // Validasi password
-    if (!validatePassword(formData.password)) {
+    if (!validatePassword(password)) {
       setError("Password must be at least 6 characters long");
       return;
     }
-
-    if (formData.password !== formData.confirmPassword) {
+    if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
     setLoading(true);
     try {
-      // Prepare payload dengan data yang bersih
       const payload = {
-        name: formData.name.trim(),
-        email: formData.email.trim().toLowerCase(),
-        password: formData.password,
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        password,
         age: ageNum,
-        gender: formData.gender,
+        gender,
       };
 
-      console.log("Registering user with payload:", JSON.stringify(payload, null, 2));
-      
       const response = await authService.register(payload);
-      
-      console.log("Registration successful:", response.data);
-      
-      // Redirect ke login dengan success message
-      navigate("/login", { 
-        state: { 
-          message: "Registration successful! Please login with your credentials." 
-        }
-      });
-      
-    } catch (err) {
-      console.error("Registration error:", err);
-      
-      // Handle different types of errors
-      let errorMessage = "Registration failed. Please try again.";
-      
-      if (err.response) {
-        // Server responded with error status
-        const statusCode = err.response.status;
-        const serverMessage = err.response.data?.message;
-        
-        console.error("Server error response:", {
-          status: statusCode,
-          data: err.response.data
-        });
-        
-        switch (statusCode) {
-          case 400:
-            errorMessage = serverMessage || "Invalid data provided";
-            break;
-          case 409:
-            errorMessage = "Email already exists. Please use a different email.";
-            break;
-          case 422:
-            errorMessage = serverMessage || "Validation failed";
-            break;
-          case 500:
-            errorMessage = "Server error. Please try again later.";
-            break;
-          default:
-            errorMessage = serverMessage || `Server error (${statusCode})`;
-        }
-      } else if (err.request) {
-        // Network error
-        console.error("Network error:", err.request);
-        errorMessage = "Network error. Please check your connection.";
-      } else {
-        // Other error
-        console.error("Request setup error:", err.message);
-        errorMessage = "Something went wrong. Please try again.";
-      }
-      
+  console.log("✅ Registrasi Berhasil:", response.data);
+  navigate("/login", {
+    state: { message: "✅ Registrasi berhasil! Silakan login." },
+  });
+} catch (err) {
+  console.error("❌ Registrasi Gagal:", err);
+  let errorMessage = "❌ Registrasi gagal. Silakan coba lagi.";
+
+  if (err.response) {
+    const statusCode = err.response.status;
+    const serverMessage = err.response.data?.msg || err.response.data?.message;
+    switch (statusCode) {
+      case 400:
+        errorMessage = serverMessage || "Data yang dikirim tidak valid.";
+        break;
+      case 409:
+        errorMessage = serverMessage || "Email sudah terdaftar. Silakan gunakan email lain.";
+        break;
+      case 422:
+        errorMessage = serverMessage || "Validasi gagal. Periksa kembali data Anda.";
+        break;
+      case 500:
+        errorMessage = serverMessage || "Server Error. Silakan coba lagi nanti.";
+        break;
+      default:
+        errorMessage = serverMessage || `Server Error (${statusCode})`;
+    }
+  } else if (err.request) {
+    errorMessage = "Terjadi kesalahan jaringan. Periksa koneksi internet Anda.";
+  } else {
+    errorMessage = "Terjadi kesalahan. Silakan coba lagi.";
+  }
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -152,15 +109,15 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-8 flex items-center justify-center">
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden w-full max-w-3xl flex">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-lg w-full max-w-3xl flex flex-col md:flex-row overflow-hidden">
         
-        {/* Left Illustration - Hidden on mobile */}
+        {/* Left Illustration */}
         <div className="hidden md:flex w-1/2 bg-[#D6FFED] flex-col items-center justify-center p-6">
           <img
             src={registerIllustration}
             alt="Sign up illustration"
-            className="w-full h-auto object-contain mb-4 max-w-[220px]"
+            className="w-full max-w-[220px] h-auto object-contain mb-4"
           />
           <p className="text-secondary text-center text-sm">
             Silahkan sign up dulu sebelum{" "}
@@ -168,7 +125,7 @@ const Register = () => {
           </p>
         </div>
 
-        {/* Right Form - Full width on mobile */}
+        {/* Right Form */}
         <div className="w-full md:w-1/2 p-6 flex flex-col justify-center">
           <div className="max-w-sm mx-auto w-full">
             <h1 className="text-xl md:text-2xl font-bold text-primary mb-1 text-center">
@@ -177,13 +134,13 @@ const Register = () => {
             <p className="text-secondary mb-4 text-sm text-center">
               Silahkan daftar dengan data lengkap kamu.
             </p>
-            
+
             {error && (
               <div className="mb-3 p-2.5 bg-red-100 border border-red-400 text-red-700 rounded-xl text-xs">
                 {error}
               </div>
             )}
-            
+
             <form onSubmit={handleSubmit} className="space-y-3">
               {/* Name */}
               <div className="relative">
@@ -194,7 +151,6 @@ const Register = () => {
                   value={formData.name}
                   onChange={handleChange}
                   className="w-full border border-gray-300 rounded-xl py-2 pl-3 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  required
                   disabled={loading}
                 />
                 <User size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -209,13 +165,12 @@ const Register = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className="w-full border border-gray-300 rounded-xl py-2 pl-3 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  required
                   disabled={loading}
                 />
                 <Mail size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
               </div>
 
-              {/* Age and Gender Row */}
+              {/* Age & Gender */}
               <div className="grid grid-cols-2 gap-3">
                 <input
                   type="number"
@@ -226,17 +181,14 @@ const Register = () => {
                   min="1"
                   max="120"
                   className="w-full border border-gray-300 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  required
                   disabled={loading}
                 />
-                
                 <div className="relative">
                   <select
                     name="gender"
                     value={formData.gender}
                     onChange={handleChange}
                     className="w-full border border-gray-300 rounded-xl py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary appearance-none bg-white"
-                    required
                     disabled={loading}
                   >
                     <option value="">Gender</option>
@@ -260,9 +212,7 @@ const Register = () => {
                   value={formData.password}
                   onChange={handleChange}
                   className="w-full border border-gray-300 rounded-xl py-2 pl-3 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  required
                   disabled={loading}
-                  minLength="6"
                 />
                 <button
                   type="button"
@@ -283,7 +233,6 @@ const Register = () => {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   className="w-full border border-gray-300 rounded-xl py-2 pl-3 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  required
                   disabled={loading}
                 />
                 <button
@@ -299,16 +248,17 @@ const Register = () => {
               {/* Password match indicator */}
               {formData.confirmPassword && (
                 <div className={`text-xs px-1 ${
-                  formData.password === formData.confirmPassword 
-                    ? "text-green-600" 
+                  formData.password === formData.confirmPassword
+                    ? "text-green-600"
                     : "text-red-600"
                 }`}>
-                  {formData.password === formData.confirmPassword 
-                    ? "✓ Passwords match" 
+                  {formData.password === formData.confirmPassword
+                    ? "✓ Passwords match"
                     : "✗ Passwords do not match"}
                 </div>
               )}
 
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
@@ -324,11 +274,11 @@ const Register = () => {
                 )}
               </button>
             </form>
-            
+
             <p className="text-secondary mt-4 text-center text-sm">
               Have an account?{" "}
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="text-textPink font-medium hover:underline transition-colors"
               >
                 Login now

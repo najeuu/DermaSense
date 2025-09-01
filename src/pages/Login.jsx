@@ -35,13 +35,13 @@ const Login = () => {
         password: formData.password,
       });
 
-      console.log('Login success:', res.data);
+      console.log('✅ Login Berhasil:', res.data);
       
       // Redirect setelah login sukses
       navigate('/');
     } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.message || 'Login failed');
+      console.error("❌ Login Gagal:", err);
+      setError(err.response?.data?.message || 'Login gagal');
     } finally {
       setLoading(false);
     }
