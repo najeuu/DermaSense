@@ -328,7 +328,7 @@ const Scan = () => {
           scanResults={scanResults}
         />
 
-          {/* Solution Area - Pass scanResults ke Solution component */}
+          {/* Solution Area */}
         <Solution 
           scanCompleted={scanCompleted} 
           scanResults={scanResults}

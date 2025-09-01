@@ -211,7 +211,6 @@ export const updateProfile = async (profileData, isMultipart = false) => {
   }
 };
 
-
 // PUT /api/profile/password
 export const changePassword = async (passwordData) => {
   try {

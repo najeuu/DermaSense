@@ -320,19 +320,9 @@ const Solution = ({ scanCompleted, scanResults }) => {
     },
   ];
   
-  // const handleSeeAll = (articlePath, severity) => {
-  //   // Simulate navigation to article page
-  //   console.log(`Navigate to: /article/${articlePath}?severity=${severity.toLowerCase()}`);
-  //   alert(`Navigating to: /article/${articlePath}?severity=${severity.toLowerCase()}`);
-  // };
-  
   const handleViewHistory = () => {
     // Navigate to history page
     console.log('Navigate to: /history');
-    // Replace the alert with actual navigation logic
-    // For example, if using React Router:
-    // navigate('/history');
-    // or window.location.href = '/history';
     window.location.href = '/history';
   };
   
@@ -391,18 +381,6 @@ const Solution = ({ scanCompleted, scanResults }) => {
                   <span className="text-2xl">{section.icon}</span>
                   <h3 className="text-lg font-semibold text-gray-900">{section.title}</h3>
                 </div>
-                {/* <button
-                  onClick={() => handleSeeAll(section.articlePath, severityToUse)}
-                  className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
-                    severityColor === "red"
-                      ? "bg-red-500 text-white hover:bg-red-600"
-                      : severityColor === "yellow"
-                      ? "bg-yellow-500 text-white hover:bg-yellow-600"
-                      : "bg-green-500 text-white hover:bg-green-600"
-                  }`}
-                >
-                  See all
-                </button> */}
               </div>
               
               <p className="text-gray-600 text-sm mb-3">{section.description}</p>
