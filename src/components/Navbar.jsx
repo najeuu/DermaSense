@@ -8,11 +8,11 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [notificationOpen, setNotificationOpen] = useState(false); // 👉 tambah state notifikasi
+  const [notificationOpen, setNotificationOpen] = useState(false); // state notifikasi
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userData, setUserData] = useState(null); // 👉 state user
+  const [userData, setUserData] = useState(null); 
   
-  // 👉 Data notifikasi sample
+  // 👉 Data notifikasi sample (karna belum terhubung ke api)
   const [notifications, setNotifications] = useState([
     {
       id: 1,
@@ -81,7 +81,7 @@ const Navbar = () => {
     return "U";
   };
 
-  // 👉 Handler untuk mark as read
+  // Handler untuk mark as read
   const markAsRead = (id) => {
     setNotifications(prev => 
       prev.map(notif => 
@@ -90,17 +90,17 @@ const Navbar = () => {
     );
   };
 
-  // 👉 Handler untuk mark all as read
+  // Handler untuk mark all as read
   const markAllAsRead = () => {
     setNotifications(prev => 
       prev.map(notif => ({ ...notif, isRead: true }))
     );
   };
 
-  // 👉 Hitung unread notifications
+  // Hitung unread notifications
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
-  // 👉 Get icon berdasarkan type notifikasi
+  // Get icon berdasarkan type notifikasi
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'scan_result': return '🔬';
@@ -146,7 +146,7 @@ const Navbar = () => {
                   <History className="w-5 h-5" />
                 </Link>
                 
-                {/* 👉 Notification Button dengan Dropdown */}
+                {/* Notification Button dengan Dropdown */}
                 <div className="relative">
                   <button 
                     onClick={() => {
