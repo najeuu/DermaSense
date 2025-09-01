@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#32C2A0',      // untuk judul & tombol utama
+        primary: '#268F79',      // untuk judul & tombol utama
         secondary: '#757575',     // untuk teks biasa
         textPink: '#F4426F',      // untuk link Sign Up / highlight
         solutionBox: '#1E7460',   // area solution

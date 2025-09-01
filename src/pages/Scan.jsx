@@ -3,113 +3,204 @@ import { UploadCloud, Camera, X, RefreshCw } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { captureFromCamera } from "../utils/camera";
+import { predictImage } from "../utils/axiosConfig";
+import Result from "../components/Result";
+import Solution from "../components/Solution";
 
 const Scan = () => {
-  const [preview, setPreview] = useState(null); // untuk upload area
-  const [resultImage, setResultImage] = useState(null); // untuk result area
+  const [preview, setPreview] = useState(null);
+  const [resultImage, setResultImage] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [scanCompleted, setScanCompleted] = useState(false);
   const [scanResults, setScanResults] = useState({
-    diagnosis: "Penyakit gatal",
-    date: "Sabtu, 20 Juli 2024, Pukul 10:41 WIB",
-    severity: "Sedang", // Ringan, Sedang, Tinggi
-    effects: [
-      { name: "Kemerahan", percentage: "35%" },
-      { name: "Menggaruk", percentage: "35%" },
-      { name: "Ketebalan", percentage: "36%" },
-      { name: "Ukontinuiti", percentage: "35%" }
-    ]
+    diagnosis: "",
+    date: "",
+    severity: "",
+    effects: [],
   });
   const [fileName, setFileName] = useState("");
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
-  // Handle file upload (pilih file dari komputer/HP)
+  // Handle file upload
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith("image/")) {
       setFileName(file.name);
+      setUploadedFile(file);
+      setError(null);
+
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result);
-        console.log("Preview set:", reader.result.substring(0, 50) + "..."); // Debug log
-      };
+      reader.onloadend = () => setPreview(reader.result);
       reader.readAsDataURL(file);
     } else if (file) {
-      alert("Hanya file gambar yang diperbolehkan!");
+      const msg = "Hanya file gambar yang diperbolehkan!";
+      setError(msg);
+      alert(msg);
     }
   };
 
-  // Open file picker
-  const handleUploadClick = () => {
-    fileInputRef.current.click();
-  };
+  const handleUploadClick = () => fileInputRef.current?.click();
 
-  // Ambil gambar dari kamera (pakai utils)
+  // Camera capture
   const handleCameraCapture = async () => {
     try {
       const imageData = await captureFromCamera();
       setPreview(imageData);
       setFileName("camera-capture.jpg");
-      console.log("Camera capture set:", imageData.substring(0, 50) + "..."); // Debug log
+      setError(null);
+
+      // Convert base64 to file for API
+      const response = await fetch(imageData);
+      const blob = await response.blob();
+      const file = new File([blob], "camera-capture.jpg", { type: "image/jpeg" });
+      setUploadedFile(file);
     } catch (err) {
-      console.error("Camera error:", err);
       if (err.message !== "Dibatalkan oleh user") {
+        setError(err.message);
         alert(err.message);
       }
     }
   };
 
-  // Clear preview
   const handleClearPreview = () => {
     setPreview(null);
     setFileName("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+    setUploadedFile(null);
+    setError(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  // Process API response to match UI format
+  const processApiResponse = (apiData) => {
+    try {
+      const effects = [];
+      const detailPrediction = apiData.detailedPrediction || {};
+
+      const kemerahan = parseFloat(detailPrediction.kemerahan) || 0;
+      const gatal = parseFloat(detailPrediction.gatal) || 0;
+      const ketebalan = parseFloat(detailPrediction.ketebalan) || 0;
+      const likenifikasi = parseFloat(detailPrediction.likenifikasi) || 0;
+
+      effects.push({ name: "Kemerahan", percentage: `${Math.round(kemerahan)}%` });
+      effects.push({ name: "Menggaruk", percentage: `${Math.round(gatal)}%` });
+      effects.push({ name: "Ketebalan", percentage: `${Math.round(ketebalan)}%` });
+      effects.push({ name: "Likenifikasi", percentage: `${Math.round(likenifikasi)}%` });
+
+      // Determine severity
+      let severity = "Ringan";
+      if (detailPrediction.keparahan?.kelas) {
+        const backendSeverity = detailPrediction.keparahan.kelas.toLowerCase();
+        if (backendSeverity.includes("parah") || backendSeverity.includes("tinggi")) severity = "Tinggi";
+        else if (backendSeverity.includes("sedang")) severity = "Sedang";
+      } else {
+        const maxPercentage = Math.max(kemerahan, gatal, ketebalan, likenifikasi);
+        if (maxPercentage > 60) severity = "Tinggi";
+        else if (maxPercentage > 30) severity = "Sedang";
+      }
+
+      // Diagnosis
+      let diagnosis = "Kondisi Kulit Terdeteksi";
+      if (detailPrediction.keparahan?.kelas) {
+        diagnosis = `Analisis Kulit - ${detailPrediction.keparahan.kelas}`;
+      }
+
+      // Date
+      const now = new Date();
+      const formattedDate =
+        now.toLocaleDateString("id-ID", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }) + " WIB";
+
+      return { diagnosis, date: formattedDate, severity, effects };
+    } catch {
+      return {
+        diagnosis: "Error memproses hasil",
+        date: new Date().toLocaleDateString("id-ID") + " WIB",
+        severity: "Tidak diketahui",
+        effects: [
+          { name: "Kemerahan", percentage: "0%" },
+          { name: "Menggaruk", percentage: "0%" },
+          { name: "Ketebalan", percentage: "0%" },
+          { name: "Likenifikasi", percentage: "0%" },
+        ],
+      };
     }
   };
 
-  // Simulasi proses scan
-  const handleScan = () => {
-    if (!preview) {
-      alert("Silakan upload foto dulu!");
+  // Handle scan with API integration
+  const handleScan = async () => {
+    if (!preview || !uploadedFile) {
+      const msg = "Silakan upload foto dulu!";
+      setError(msg);
+      alert(msg);
       return;
     }
-    
-    // Pindahkan preview ke result area
+
+    // Move preview to result area
     setResultImage(preview);
-    
-    // Reset upload area ke bentuk semula
+
+    // Reset upload area
     setPreview(null);
     setFileName("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-    
+    if (fileInputRef.current) fileInputRef.current.value = "";
+
     setScanning(true);
     setScanCompleted(false);
-    
-    setTimeout(() => {
+    setError(null);
+
+    try {
+      const response = await predictImage(uploadedFile, 0.5);
+
+      // Store scan date with unique identifier
+      const scanDate = new Date().toISOString();
+      const scanId = response._id || response.id || `scan_${Date.now()}`;
+      const existingDates = JSON.parse(localStorage.getItem("scanDates") || "{}");
+      existingDates[scanId] = scanDate;
+      localStorage.setItem("scanDates", JSON.stringify(existingDates));
+
+      // Process response for UI
+      const processedResults = processApiResponse(response);
+      setScanResults(processedResults);
+
+      // Loading simulation for better UX
+      setTimeout(() => {
+        setScanning(false);
+        setScanCompleted(true);
+        window.dispatchEvent(new Event("historyUpdated"));
+      }, 1500);
+    } catch (error) {
       setScanning(false);
-      setScanCompleted(true);
-      // Update tanggal scan dengan waktu sekarang
-      const now = new Date();
-      const formattedDate = now.toLocaleDateString('id-ID', {
-        weekday: 'long',
-        year: 'numeric', 
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      }) + ' WIB';
-      
-      setScanResults(prev => ({
-        ...prev,
-        date: formattedDate,
-        // Simulasi random severity berdasarkan persentase tertinggi
-        severity: Math.max(...prev.effects.map(e => parseInt(e.percentage))) > 40 ? "Tinggi" : 
-                 Math.max(...prev.effects.map(e => parseInt(e.percentage))) > 25 ? "Sedang" : "Ringan"
-      }));
-    }, 3000);
+
+      // Error handling
+      let errorMessage = "Terjadi kesalahan saat memproses gambar.";
+      if (error.message?.includes("connect") || error.message?.includes("network")) {
+        errorMessage = "Tidak dapat terhubung ke server. Periksa koneksi internet Anda.";
+      } else if (error.response?.status === 401) {
+        errorMessage = "Sesi Anda telah berakhir. Silakan login ulang.";
+      } else if (error.response?.status === 400) {
+        errorMessage = error.response.data?.msg || "File gambar tidak valid.";
+      } else if (error.response?.status === 413) {
+        errorMessage = "Ukuran file terlalu besar. Maksimal 10MB.";
+      } else if (error.message?.includes("timeout")) {
+        errorMessage = "Proses terlalu lama. Silakan coba lagi.";
+      }
+
+      setError(errorMessage);
+      alert(errorMessage);
+
+      // Reset states on error
+      setPreview(resultImage);
+      setResultImage(null);
+    } finally {
+      setUploadedFile(null);
+    }
   };
 
   return (
@@ -123,54 +214,46 @@ const Scan = () => {
             <span className="text-gray-800">Scanning Area</span>
           </h1>
           <p className="text-gray-600 mt-2 max-w-2xl mx-auto">
-            Unggah foto wajah Anda untuk memulai pengecekan kondisi kulit.
-            Sistem kami akan menganalisis secara cepat menggunakan teknologi
-            berbasis AI yang akurat dan aman.
+            Unggah foto wajah Anda untuk memulai pengecekan kondisi kulit. Sistem kami akan menganalisis
+            secara cepat menggunakan teknologi berbasis AI yang akurat dan aman.
           </p>
         </div>
+
+        {/* Error Alert */}
+        {error && (
+          <div className="w-full max-w-4xl bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
 
         {/* Upload Section */}
         <div className="w-full max-w-4xl bg-white rounded-2xl shadow-md p-6 mb-10">
           <h2 className="font-semibold text-lg text-gray-800 mb-4">Upload</h2>
-          
+
           {/* Upload Box */}
           <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center text-gray-500 hover:border-primary transition">
-            
             {preview ? (
-              // Show preview if image exists
               <div className="relative">
-                <img
-                  src={preview}
-                  alt="Preview"
-                  className="rounded-xl max-h-64 object-contain mb-4"
-                />
+                <img src={preview} alt="Preview" className="rounded-xl max-h-64 object-contain mb-4" />
                 <button
                   onClick={handleClearPreview}
                   className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition"
                 >
                   <X size={16} />
                 </button>
-                {fileName && (
-                  <p className="text-sm text-gray-600 text-center mt-2">
-                    {fileName}
-                  </p>
-                )}
+                {fileName && <p className="text-sm text-gray-600 text-center mt-2">{fileName}</p>}
               </div>
             ) : (
-              // Show upload area if no preview
               <div onClick={handleUploadClick} className="cursor-pointer text-center">
                 <UploadCloud size={40} className="mb-2 text-gray-400 mx-auto" />
                 <p className="text-center mb-2">
-                  Drop your picture here or{" "}
-                  <span className="text-primary font-medium">
-                    click to browse
-                  </span>
+                  Drop your picture here or <span className="text-primary font-medium">click to browse</span>
                 </p>
-                <p className="text-sm text-gray-400">Max. Size: 25 MB</p>
+                <p className="text-sm text-gray-400">Max. Size: 10 MB</p>
               </div>
             )}
-            
-            {/* Camera Button - always visible */}
+
+            {/* Action Buttons */}
             <div className="flex gap-3 mt-4">
               {!preview && (
                 <button
@@ -182,7 +265,7 @@ const Scan = () => {
                   Browse Files
                 </button>
               )}
-              
+
               <button
                 type="button"
                 onClick={handleCameraCapture}
@@ -191,7 +274,7 @@ const Scan = () => {
                 <Camera size={18} />
                 Take Photo
               </button>
-              
+
               {preview && (
                 <button
                   type="button"
@@ -214,6 +297,7 @@ const Scan = () => {
             onChange={handleFileChange}
           />
 
+          {/* Scan Button */}
           <div className="flex justify-center mt-6">
             <button
               onClick={handleScan}
@@ -227,7 +311,7 @@ const Scan = () => {
               {scanning ? (
                 <span className="flex items-center gap-2">
                   <RefreshCw size={16} className="animate-spin" />
-                  Scanning...
+                  Analyzing...
                 </span>
               ) : (
                 "Scan Now"
@@ -237,256 +321,18 @@ const Scan = () => {
         </div>
 
         {/* Result Section */}
-        <div className="w-full max-w-4xl bg-white rounded-2xl shadow-md p-6">
-          <h2 className="font-semibold text-lg text-gray-800 mb-4">The Result</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Image Preview */}
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 flex items-center justify-center text-gray-400 min-h-[200px]">
-              {resultImage ? (
-                <img
-                  src={resultImage}
-                  alt="Scan Result"
-                  className="rounded-xl max-h-64 object-contain"
-                />
-              ) : (
-                <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-2 bg-gray-100 rounded-full flex items-center justify-center">
-                    <UploadCloud size={24} className="text-gray-400" />
-                  </div>
-                  <p>Ready for your result</p>
-                </div>
-              )}
-            </div>
+        <Result
+          resultImage={resultImage}
+          scanCompleted={scanCompleted}
+          scanning={scanning}
+          scanResults={scanResults}
+        />
 
-            {/* Table Result */}
-            <div>
-              {scanCompleted ? (
-                <div>
-                  {/* Header dengan diagnosis dan badge */}
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-lg text-gray-800">{scanResults.diagnosis}</h3>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      scanResults.severity === 'Tinggi' 
-                        ? 'bg-red-100 text-red-600' 
-                        : scanResults.severity === 'Sedang'
-                        ? 'bg-yellow-100 text-yellow-600'
-                        : 'bg-green-100 text-green-600'
-                    }`}>
-                      {scanResults.severity}
-                    </span>
-                  </div>
-                  <p className="text-gray-500 text-sm mb-4">{scanResults.date}</p>
-                  
-                  {/* Table hasil */}
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="text-left text-gray-500 text-sm border-b">
-                        <th className="py-2 font-medium">Effect</th>
-                        <th className="py-2 font-medium text-primary">Presentase</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-gray-700">
-                      {scanResults.effects.map((effect, index) => (
-                        <tr key={index} className="border-b border-gray-100">
-                          <td className="py-3">{effect.name}</td>
-                          <td className="py-3 text-primary font-medium">{effect.percentage}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div>
-                  <p className="text-gray-600 mb-3">
-                    {scanning
-                      ? "Scanning in progress..."
-                      : "Waiting for your scanning . . ."}
-                  </p>
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="text-left text-gray-500 text-sm border-b">
-                        <th className="py-2 font-medium">Effect</th>
-                        <th className="py-2 font-medium">Presentase</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-gray-700">
-                      <tr className="border-b border-gray-100">
-                        <td className="py-3">Kemerahan</td>
-                        <td className="py-3 text-gray-400">-</td>
-                      </tr>
-                      <tr className="border-b border-gray-100">
-                        <td className="py-3">Menggaruk</td>
-                        <td className="py-3 text-gray-400">-</td>
-                      </tr>
-                      <tr className="border-b border-gray-100">
-                        <td className="py-3">Ketebalan</td>
-                        <td className="py-3 text-gray-400">-</td>
-                      </tr>
-                      <tr>
-                        <td className="py-3">Ukontinuiti</td>
-                        <td className="py-3 text-gray-400">-</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Solution Area - hanya muncul setelah scan selesai */}
-        {scanCompleted && (
-          <div className="w-full max-w-4xl mt-8">
-            <h2 className="text-2xl font-bold mb-6">
-              <span className="text-primary">Solution </span>
-              <span className="text-gray-800">Area</span>
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Faktor Penyebab */}
-              <div className="bg-primary rounded-2xl p-4 text-white relative overflow-hidden flex gap-4">
-                <div className="flex-1 relative z-10">
-                  <h3 className="font-semibold text-lg mb-2">Faktor Penyebab</h3>
-                  <p className="text-sm mb-3 opacity-90">
-                    Berisi menjelaskan faktor dari penyebab yang menyebabkan penyakit tersebut.
-                  </p>
-                  <button 
-                    onClick={() => window.location.href = '/article'}
-                    className="bg-white text-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition"
-                  >
-                    See all
-                  </button>
-                </div>
-                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-lg flex-shrink-0 flex items-center justify-center">
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Gejala */}
-              <div className="bg-primary rounded-2xl p-4 text-white relative overflow-hidden flex gap-4">
-                <div className="flex-1 relative z-10">
-                  <h3 className="font-semibold text-lg mb-2">Gejala</h3>
-                  <p className="text-sm mb-3 opacity-90">
-                    Berisi menjelaskan gejala dari penyakit yang muncul.
-                  </p>
-                  <button 
-                    onClick={() => window.location.href = '/article'}
-                    className="bg-white text-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition"
-                  >
-                    See all
-                  </button>
-                </div>
-                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-lg flex-shrink-0 flex items-center justify-center">
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
-                      <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Rekomendasi Dosis */}
-              <div className="bg-primary rounded-2xl p-4 text-white relative overflow-hidden flex gap-4">
-                <div className="flex-1 relative z-10">
-                  <h3 className="font-semibold text-lg mb-2">Rekomendasi Dosis</h3>
-                  <p className="text-sm mb-3 opacity-90">
-                    Berisi menjelaskan rekomendasi dosis obat gejala tersebut.
-                  </p>
-                  <button 
-                    onClick={() => window.location.href = '/article'}
-                    className="bg-white text-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition"
-                  >
-                    See all
-                  </button>
-                </div>
-                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-lg flex-shrink-0 flex items-center justify-center">
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                      <rect x="7" y="7" width="3" height="9"/>
-                      <rect x="14" y="7" width="3" height="5"/>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Cara Mengatasi */}
-              <div className="bg-primary rounded-2xl p-4 text-white relative overflow-hidden flex gap-4">
-                <div className="flex-1 relative z-10">
-                  <h3 className="font-semibold text-lg mb-2">Cara Mengatasi</h3>
-                  <p className="text-sm mb-3 opacity-90">
-                    Berisi menjelaskan cara menjaga agar penyakit tersebut.
-                  </p>
-                  <button 
-                    onClick={() => window.location.href = '/article'}
-                    className="bg-white text-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition"
-                  >
-                    See all
-                  </button>
-                </div>
-                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-lg flex-shrink-0 flex items-center justify-center">
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
-                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                      <polyline points="22,4 12,14.01 9,11.01"/>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Tips */}
-              <div className="bg-primary rounded-2xl p-4 text-white relative overflow-hidden flex gap-4">
-                <div className="flex-1 relative z-10">
-                  <h3 className="font-semibold text-lg mb-2">Tips</h3>
-                  <p className="text-sm mb-3 opacity-90">
-                    Berisi menjelaskan beberapa tips yang ada untuk kejadian gejala tersebut.
-                  </p>
-                  <button 
-                    onClick={() => window.location.href = '/article'}
-                    className="bg-white text-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition"
-                  >
-                    See all
-                  </button>
-                </div>
-                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-lg flex-shrink-0 flex items-center justify-center">
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
-                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                      <circle cx="12" cy="17" r="1"/>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Saran */}
-              <div className="bg-primary rounded-2xl p-4 text-white relative overflow-hidden flex gap-4">
-                <div className="flex-1 relative z-10">
-                  <h3 className="font-semibold text-lg mb-2">Saran</h3>
-                  <p className="text-sm mb-3 opacity-90">
-                    Berisi menjelaskan saran yang ada untuk penyakit tersebut.
-                  </p>
-                  <button 
-                    onClick={() => window.location.href = '/article'}
-                    className="bg-white text-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition"
-                  >
-                    See all
-                  </button>
-                </div>
-                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-lg flex-shrink-0 flex items-center justify-center">
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+          {/* Solution Area - Pass scanResults ke Solution component */}
+        <Solution 
+          scanCompleted={scanCompleted} 
+          scanResults={scanResults}
+        />
       </main>
       <Footer />
     </div>

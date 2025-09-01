@@ -2,7 +2,12 @@ import axios from 'axios';
 
 // Determine base URL based on environment
 const getBaseURL = () => {
-  // Bypass proxy temporarily - langsung ke API
+  // Development: use proxy
+  if (import.meta.env.DEV) {
+    return ''; // Kosong untuk pakai proxy dari vite
+  }
+  
+  // Production: langsung ke API
   return 'https://9df51053-3359-439c-8b58-1024d68f9aaa-00-5c1cj7iuirec.pike.replit.dev';
 };
 
@@ -15,8 +20,6 @@ const axiosInstance = axios.create({
   },
   timeout: 15000,
   withCredentials: false,
-  // Add CORS handling
-  crossDomain: true
 });
 
 // Request interceptor untuk add auth token
@@ -89,7 +92,6 @@ axiosInstance.interceptors.response.use(
 );
 
 // 1. AUTENTIKASI DAN MANAJEMEN PENGGUNA
-
 export const authService = {
   // POST /api/register
   register: async (userData) => {
@@ -182,23 +184,33 @@ export const getProfile = async () => {
 };
 
 // PUT /api/profile
-export const updateProfile = async (profileData) => {
+export const updateProfile = async (profileData, isMultipart = false) => {
   try {
-    const payload = {
-      ...(profileData.name && { name: profileData.name.trim() }),
-      ...(profileData.age && { age: parseInt(profileData.age, 10) }),
-      ...(profileData.gender && { gender: profileData.gender })
-    };
-    
-    console.log('Updating profile with payload:', JSON.stringify(payload, null, 2));
-    
-    const response = await axiosInstance.put('/api/profile', payload);
+    let response;
+
+    if (isMultipart) {
+      console.log("Updating profile with FormData (multipart)");
+      response = await axiosInstance.put("/api/profile", profileData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    } else {
+      const payload = {
+        ...(profileData.name && { name: profileData.name.trim() }),
+        ...(profileData.age && { age: parseInt(profileData.age, 10) }),
+        ...(profileData.gender && { gender: profileData.gender }),
+      };
+
+      console.log("Updating profile with payload:", JSON.stringify(payload, null, 2));
+      response = await axiosInstance.put("/api/profile", payload);
+    }
+
     return response.data;
   } catch (error) {
-    console.error('Update profile error:', error);
+    console.error("Update profile error:", error);
     throw error;
   }
 };
+
 
 // PUT /api/profile/password
 export const changePassword = async (passwordData) => {
@@ -272,7 +284,6 @@ export const getHistory = async () => {
 };
 
 // UTILITY FUNCTIONS
-
 export const logout = () => {
   localStorage.removeItem('token');
   console.log('User logged out');
