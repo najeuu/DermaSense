@@ -7,53 +7,52 @@
 export async function captureFromCamera() {
   return new Promise(async (resolve, reject) => {
     let stream = null;
-    
+
     try {
       // Minta akses kamera
-      stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          width: { ideal: 1280 }, 
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1280 },
           height: { ideal: 720 },
-          facingMode: 'user' // gunakan front camera jika ada
-        } 
+          facingMode: 'user', // gunakan front camera jika ada
+        },
       });
-      
+
       // Buat video element
-      const video = document.createElement("video");
+      const video = document.createElement('video');
       video.srcObject = stream;
       video.autoplay = true;
       video.playsInline = true;
-      
+
       // Buat canvas untuk capture
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-      
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+
       // Tunggu video ready
       video.onloadedmetadata = () => {
         // Set canvas size sama dengan video
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        
+
         // Buat modal untuk preview kamera
         createCameraModal(video, canvas, context, stream, resolve, reject);
       };
-      
+
       video.onerror = (err) => {
-        console.error("Video error:", err);
+        console.error('Video error:', err);
         stopStream(stream);
-        reject(new Error("Gagal memuat video dari kamera"));
+        reject(new Error('Gagal memuat video dari kamera'));
       };
-      
     } catch (err) {
-      console.error("Camera access error:", err);
+      console.error('Camera access error:', err);
       stopStream(stream);
-      
+
       if (err.name === 'NotAllowedError') {
-        reject(new Error("Akses kamera ditolak. Silakan izinkan akses kamera."));
+        reject(new Error('Akses kamera ditolak. Silakan izinkan akses kamera.'));
       } else if (err.name === 'NotFoundError') {
-        reject(new Error("Kamera tidak ditemukan pada perangkat ini."));
+        reject(new Error('Kamera tidak ditemukan pada perangkat ini.'));
       } else {
-        reject(new Error("Tidak dapat mengakses kamera: " + err.message));
+        reject(new Error('Tidak dapat mengakses kamera: ' + err.message));
       }
     }
   });
@@ -78,7 +77,7 @@ function createCameraModal(video, canvas, context, stream, resolve, reject) {
     justify-content: center;
     z-index: 9999;
   `;
-  
+
   // Style video
   video.style.cssText = `
     max-width: 90%;
@@ -86,7 +85,7 @@ function createCameraModal(video, canvas, context, stream, resolve, reject) {
     border-radius: 10px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   `;
-  
+
   // Buat container untuk tombol
   const buttonContainer = document.createElement('div');
   buttonContainer.style.cssText = `
@@ -94,10 +93,11 @@ function createCameraModal(video, canvas, context, stream, resolve, reject) {
     display: flex;
     gap: 15px;
   `;
-  
+
   // Tombol capture
   const captureBtn = document.createElement('button');
-  captureBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg> Ambil Foto';
+  captureBtn.innerHTML =
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg> Ambil Foto';
   captureBtn.style.cssText = `
     background: #14B8A6;
     color: white;
@@ -111,7 +111,7 @@ function createCameraModal(video, canvas, context, stream, resolve, reject) {
     align-items: center;
     gap: 8px;
   `;
-  
+
   // Tombol cancel
   const cancelBtn = document.createElement('button');
   cancelBtn.textContent = '❌ Batal';
@@ -125,41 +125,41 @@ function createCameraModal(video, canvas, context, stream, resolve, reject) {
     font-size: 16px;
     font-weight: 500;
   `;
-  
+
   // Event handlers
   captureBtn.onclick = () => {
     try {
       // Gambar video ke canvas
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
+
       // Convert ke base64
-      const imageData = canvas.toDataURL("image/jpeg", 0.8);
-      
+      const imageData = canvas.toDataURL('image/jpeg', 0.8);
+
       // Cleanup
       document.body.removeChild(modal);
       stopStream(stream);
-      
+
       resolve(imageData);
     } catch (err) {
-      console.error("Capture error:", err);
+      console.error('Capture error:', err);
       document.body.removeChild(modal);
       stopStream(stream);
-      reject(new Error("Gagal mengambil foto"));
+      reject(new Error('Gagal mengambil foto'));
     }
   };
-  
+
   cancelBtn.onclick = () => {
     document.body.removeChild(modal);
     stopStream(stream);
-    reject(new Error("Dibatalkan oleh user"));
+    reject(new Error('Dibatalkan oleh user'));
   };
-  
+
   // Assemble modal
   buttonContainer.appendChild(captureBtn);
   buttonContainer.appendChild(cancelBtn);
   modal.appendChild(video);
   modal.appendChild(buttonContainer);
-  
+
   // Add to DOM
   document.body.appendChild(modal);
 }
@@ -169,7 +169,7 @@ function createCameraModal(video, canvas, context, stream, resolve, reject) {
  */
 function stopStream(stream) {
   if (stream) {
-    stream.getTracks().forEach(track => {
+    stream.getTracks().forEach((track) => {
       track.stop();
     });
   }

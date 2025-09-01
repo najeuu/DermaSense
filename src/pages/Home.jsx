@@ -15,7 +15,7 @@ const Home = () => {
     <div className="font-poppins bg-pageBg min-h-screen">
       {/* Navbar */}
       <Navbar />
-      
+
       {/* Hero Section */}
       <section
         className="relative w-full h-[500px] sm:h-[600px] md:h-[695px] bg-cover bg-center flex items-center justify-end px-4 sm:px-8 md:px-16"
@@ -30,9 +30,9 @@ const Home = () => {
             href="#main-fitur"
             onClick={(e) => {
               e.preventDefault();
-              const section = document.getElementById("main-fitur");
+              const section = document.getElementById('main-fitur');
               if (section) {
-                section.scrollIntoView({ behavior: "smooth" });
+                section.scrollIntoView({ behavior: 'smooth' });
               }
             }}
             className="inline-flex items-center justify-center gap-2 w-[180px] sm:w-[200px] md:w-[220px] h-[36px] rounded-[6px] bg-white text-primary font-semibold text-sm hover:bg-gray-100 transition"
@@ -42,15 +42,15 @@ const Home = () => {
           </a>
         </div>
       </section>
-      
+
       {/* Main Fitur Section */}
       <section id="main-fitur" className="p-4 sm:p-8 md:p-16 scroll-mt-20">
         <h3 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">
-          <span className="text-primary">Main</span>{' '}
-          <span className="text-[#4C4C4C]">Fitur</span>
+          <span className="text-primary">Main</span> <span className="text-[#4C4C4C]">Fitur</span>
         </h3>
         <p className="text-textDark mb-6 sm:mb-8">
-          Identifikasi masalah kulitmu secara instan, dibantu oleh ahli kulit. Fitur kami yang ada di bawah ini:
+          Identifikasi masalah kulitmu secara instan, dibantu oleh ahli kulit. Fitur kami yang ada
+          di bawah ini:
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
           {/* Kotak Dermatologist */}
@@ -75,14 +75,10 @@ const Home = () => {
               </Link>
             </div>
           </div>
-          
+
           {/* Kotak Skin Scan */}
           <div className="bg-white rounded-[14px] shadow hover:shadow-lg transition overflow-hidden w-full sm:w-[456px]">
-            <img
-              src={scanImage}
-              alt="Skin Scan"
-              className="w-full h-48 object-cover"
-            />
+            <img src={scanImage} alt="Skin Scan" className="w-full h-48 object-cover" />
             <div className="p-5 flex flex-col justify-between h-[192px] sm:h-[192px]">
               <div>
                 <h4 className="font-semibold mb-2 text-textDark">Skin Scan</h4>
@@ -100,7 +96,7 @@ const Home = () => {
           </div>
         </div>
       </section>
-      
+
       {/* Article Section */}
       <section className="p-4 sm:p-8 md:p-16 bg-[#FCFFFE]">
         <h3 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-primary">Article</h3>
@@ -111,24 +107,29 @@ const Home = () => {
               category: 'Skin Healthy',
               title: 'Chai-biscuit morning habit is killing your gut health says health coach',
               author: 'Jerome Bell',
-              date: 'November 7, 2017'
+              date: 'November 7, 2017',
             },
             {
               image: article2,
               category: 'Skin Healthy',
-              title: 'Dokter Spesialis UGM Beri Tips Cegah Penularan Penyakit Kulit dari Pembelian Baju Bekas',
+              title:
+                'Dokter Spesialis UGM Beri Tips Cegah Penularan Penyakit Kulit dari Pembelian Baju Bekas',
               author: 'Jerome Bell',
-              date: 'November 7, 2017'
+              date: 'November 7, 2017',
             },
             {
               image: article3,
               category: 'Skin Healthy',
-              title: 'Unilever Indonesia Hadirkan Sains dan Teknologi untuk Kesehatan Kulit dan Kulit Kepala',
+              title:
+                'Unilever Indonesia Hadirkan Sains dan Teknologi untuk Kesehatan Kulit dan Kulit Kepala',
               author: 'Jerome Bell',
-              date: 'November 7, 2017'
-            }
+              date: 'November 7, 2017',
+            },
           ].map((item, idx) => (
-            <div key={idx} className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden w-full">
+            <div
+              key={idx}
+              className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden w-full"
+            >
               <img src={item.image} alt="Img" className="w-full h-40 sm:h-48 object-cover" />
               <div className="p-4 flex flex-col justify-between h-[179px] sm:h-[191px]">
                 <span className="text-sm font-medium text-primary bg-[#F1FFF9] px-3 py-1 rounded flex items-center justify-center w-max mb-2">
@@ -144,7 +145,7 @@ const Home = () => {
           ))}
         </div>
         <div className="flex justify-center mt-6 sm:mt-8">
-          <Link 
+          <Link
             to="/article"
             className="border border-primary text-primary px-4 sm:px-6 py-2 rounded-lg hover:bg-primary hover:text-white transition"
           >
@@ -152,7 +153,7 @@ const Home = () => {
           </Link>
         </div>
       </section>
-      
+
       {/* Footer */}
       <Footer />
     </div>

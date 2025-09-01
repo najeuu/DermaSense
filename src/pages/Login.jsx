@@ -36,11 +36,11 @@ const Login = () => {
       });
 
       console.log('✅ Login Berhasil:', res.data);
-      
+
       // Redirect setelah login sukses
       navigate('/');
     } catch (err) {
-      console.error("❌ Login Gagal:", err);
+      console.error('❌ Login Gagal:', err);
       setError(err.response?.data?.message || 'Login gagal');
     } finally {
       setLoading(false);
@@ -50,7 +50,6 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 px-4 py-8">
       <div className="bg-white/90 backdrop-blur-sm shadow-xl border border-gray-200/50 rounded-2xl overflow-hidden w-full max-w-3xl flex">
-        
         {/* Left Illustration - Hidden on mobile */}
         <div className="hidden md:flex w-1/2 bg-[#D6FFED] flex-col items-center justify-center p-6">
           <img
@@ -67,9 +66,7 @@ const Login = () => {
         {/* Right Form - Full width on mobile */}
         <div className="w-full md:w-1/2 p-6 flex flex-col justify-center">
           <div className="max-w-sm mx-auto w-full">
-            <h1 className="text-xl md:text-2xl font-bold text-primary mb-1 text-center">
-              Login!
-            </h1>
+            <h1 className="text-xl md:text-2xl font-bold text-primary mb-1 text-center">Login!</h1>
             <p className="text-secondary mb-5 text-sm text-center">
               Selamat datang di page login, silahkan isi email dan juga password.
             </p>
@@ -92,7 +89,7 @@ const Login = () => {
                 required
                 disabled={loading}
               />
-              
+
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -138,7 +135,10 @@ const Login = () => {
 
             <p className="text-secondary mt-5 text-center text-sm">
               Don't have an account?{' '}
-              <Link to="/register" className="text-textPink font-medium hover:underline transition-colors">
+              <Link
+                to="/register"
+                className="text-textPink font-medium hover:underline transition-colors"
+              >
                 Sign Up Now
               </Link>
             </p>

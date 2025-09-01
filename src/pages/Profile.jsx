@@ -1,28 +1,28 @@
 // src/pages/Profile.jsx
-import React, { useState, useEffect } from "react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import { Mail, User, Calendar, Lock } from "lucide-react";
-import { getProfile, updateProfile, changePassword } from "../utils/axiosConfig";
+import React, { useState, useEffect } from 'react';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import { Mail, User, Calendar, Lock } from 'lucide-react';
+import { getProfile, updateProfile, changePassword } from '../utils/axiosConfig';
 
 const Profile = () => {
   const [userData, setUserData] = useState({
-    name: "",
-    email: "",
-    age: "",
-    gender: ""
+    name: '',
+    email: '',
+    age: '',
+    gender: '',
   });
 
   const [formData, setFormData] = useState({
-    email: "",
-    gender: "",
-    age: "",
-    newPassword: "",
-    confirmPassword: "",
+    email: '',
+    gender: '',
+    age: '',
+    newPassword: '',
+    confirmPassword: '',
   });
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -30,23 +30,23 @@ const Profile = () => {
         const profileData = await getProfile();
         if (profileData) {
           setUserData({
-            name: profileData.name || "User Name",
-            email: profileData.email || "",
-            age: profileData.age || "",
-            gender: profileData.gender || ""
+            name: profileData.name || 'User Name',
+            email: profileData.email || '',
+            age: profileData.age || '',
+            gender: profileData.gender || '',
           });
 
           setFormData({
-            email: profileData.email || "",
-            gender: profileData.gender || "",
-            age: profileData.age?.toString() || "",
-            newPassword: "",
-            confirmPassword: "",
+            email: profileData.email || '',
+            gender: profileData.gender || '',
+            age: profileData.age?.toString() || '',
+            newPassword: '',
+            confirmPassword: '',
           });
         }
       } catch (err) {
-        console.error("Error fetching profile:", err);
-        setError("Unable to load profile data");
+        console.error('Error fetching profile:', err);
+        setError('Unable to load profile data');
       } finally {
         setLoading(false);
       }
@@ -58,13 +58,13 @@ const Profile = () => {
   const getInitials = (name, email) => {
     if (name) return name.charAt(0).toUpperCase();
     if (email) return email.charAt(0).toUpperCase();
-    return "U";
+    return 'U';
   };
 
   const generateUsername = (name, email) => {
-    if (name) return `@${name.toLowerCase().replace(/\s+/g, "")}`;
-    if (email) return `@${email.split("@")[0]}`;
-    return "@user";
+    if (name) return `@${name.toLowerCase().replace(/\s+/g, '')}`;
+    if (email) return `@${email.split('@')[0]}`;
+    return '@user';
   };
 
   const handleChange = (e) => {
@@ -74,7 +74,7 @@ const Profile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setError('');
 
     try {
       // Update profile
@@ -87,27 +87,27 @@ const Profile = () => {
       // Update password if provided
       if (formData.newPassword && formData.confirmPassword) {
         if (formData.newPassword !== formData.confirmPassword) {
-          throw new Error("Passwords do not match");
+          throw new Error('Passwords do not match');
         }
         await changePassword({
           newPassword: formData.newPassword,
-          currentPassword: "" // backend tidak minta currentPassword
+          currentPassword: '', // backend tidak minta currentPassword
         });
       }
 
-      alert("Profile updated successfully!");
-      setFormData((prev) => ({ ...prev, newPassword: "", confirmPassword: "" }));
+      alert('Profile updated successfully!');
+      setFormData((prev) => ({ ...prev, newPassword: '', confirmPassword: '' }));
       // Refresh userData
       const updatedProfile = await getProfile();
       setUserData({
-        name: updatedProfile.name || "User Name",
-        email: updatedProfile.email || "",
-        age: updatedProfile.age || "",
-        gender: updatedProfile.gender || ""
+        name: updatedProfile.name || 'User Name',
+        email: updatedProfile.email || '',
+        age: updatedProfile.age || '',
+        gender: updatedProfile.gender || '',
       });
     } catch (err) {
-      console.error("Error updating profile:", err);
-      setError(err.message || "Failed to update profile");
+      console.error('Error updating profile:', err);
+      setError(err.message || 'Failed to update profile');
     } finally {
       setLoading(false);
     }
@@ -153,17 +153,20 @@ const Profile = () => {
           <div className="mt-6 space-y-3 w-full">
             <div className="flex items-center gap-2 text-gray-600">
               <Mail size={18} />
-              <a href={`mailto:${userData.email}`} className="text-primary hover:underline truncate">
+              <a
+                href={`mailto:${userData.email}`}
+                className="text-primary hover:underline truncate"
+              >
                 {userData.email}
               </a>
             </div>
             <div className="flex items-center gap-2 text-gray-600">
               <Calendar size={18} />
-              <span>{userData.age ? `${userData.age} Tahun` : "Age not set"}</span>
+              <span>{userData.age ? `${userData.age} Tahun` : 'Age not set'}</span>
             </div>
             <div className="flex items-center gap-2 text-gray-600">
               <User size={18} />
-              <span>{userData.gender || "Gender not set"}</span>
+              <span>{userData.gender || 'Gender not set'}</span>
             </div>
           </div>
         </aside>
@@ -180,7 +183,9 @@ const Profile = () => {
               </div>
               <div>
                 <p className="font-medium">{userData.name}</p>
-                <p className="text-gray-500 text-sm">{generateUsername(userData.name, userData.email)}</p>
+                <p className="text-gray-500 text-sm">
+                  {generateUsername(userData.name, userData.email)}
+                </p>
               </div>
             </div>
 
@@ -257,7 +262,7 @@ const Profile = () => {
                   Updating...
                 </>
               ) : (
-                "Submit Change"
+                'Submit Change'
               )}
             </button>
           </form>

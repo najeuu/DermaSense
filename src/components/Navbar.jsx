@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, Bell, History } from 'lucide-react';
-import { getProfile } from "../utils/axiosConfig"; // 👉 tambahin ini
+import { getProfile } from '../utils/axiosConfig'; // 👉 tambahin ini
 
 const Navbar = () => {
   const location = useLocation();
@@ -10,8 +10,8 @@ const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false); // state notifikasi
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userData, setUserData] = useState(null); 
-  
+  const [userData, setUserData] = useState(null);
+
   // 👉 Data notifikasi sample (karna belum terhubung ke api)
   const [notifications, setNotifications] = useState([
     {
@@ -21,7 +21,7 @@ const Navbar = () => {
       message: 'Hasil analisis kulit Anda sudah tersedia',
       time: '2 menit yang lalu',
       isRead: false,
-      urgent: false
+      urgent: false,
     },
     {
       id: 2,
@@ -30,7 +30,7 @@ const Navbar = () => {
       message: 'Saatnya check-up rutin, sudah 2 bulan sejak scan terakhir',
       time: '1 jam yang lalu',
       isRead: false,
-      urgent: false
+      urgent: false,
     },
     {
       id: 3,
@@ -39,7 +39,7 @@ const Navbar = () => {
       message: '5 Tanda Awal Melanoma yang Harus Diwaspadai',
       time: '3 jam yang lalu',
       isRead: true,
-      urgent: false
+      urgent: false,
     },
     {
       id: 4,
@@ -48,12 +48,12 @@ const Navbar = () => {
       message: 'Hasil scan menunjukkan area yang perlu konsultasi dokter',
       time: '1 hari yang lalu',
       isRead: false,
-      urgent: true
-    }
+      urgent: true,
+    },
   ]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     setIsLoggedIn(!!token);
     if (token) {
       fetchProfile();
@@ -65,50 +65,52 @@ const Navbar = () => {
       const profile = await getProfile();
       setUserData(profile);
     } catch (err) {
-      console.error("Error fetching navbar profile:", err);
+      console.error('Error fetching navbar profile:', err);
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem('token');
     setIsLoggedIn(false);
-    navigate("/");
+    navigate('/');
   };
 
   const getInitials = (name, email) => {
     if (name) return name.charAt(0).toUpperCase();
     if (email) return email.charAt(0).toUpperCase();
-    return "U";
+    return 'U';
   };
 
   // Handler untuk mark as read
   const markAsRead = (id) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === id ? { ...notif, isRead: true } : notif
-      )
+    setNotifications((prev) =>
+      prev.map((notif) => (notif.id === id ? { ...notif, isRead: true } : notif)),
     );
   };
 
   // Handler untuk mark all as read
   const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notif => ({ ...notif, isRead: true }))
-    );
+    setNotifications((prev) => prev.map((notif) => ({ ...notif, isRead: true })));
   };
 
   // Hitung unread notifications
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   // Get icon berdasarkan type notifikasi
   const getNotificationIcon = (type) => {
     switch (type) {
-      case 'scan_result': return '🔬';
-      case 'reminder': return '⏰';
-      case 'article': return '📖';
-      case 'urgent': return '⚠️';
-      case 'system': return '⚙️';
-      default: return '🔔';
+      case 'scan_result':
+        return '🔬';
+      case 'reminder':
+        return '⏰';
+      case 'article':
+        return '📖';
+      case 'urgent':
+        return '⚠️';
+      case 'system':
+        return '⚙️';
+      default:
+        return '🔔';
     }
   };
 
@@ -145,10 +147,10 @@ const Navbar = () => {
                 <Link to="/history" className="p-2 text-gray-600 hover:text-primary">
                   <History className="w-5 h-5" />
                 </Link>
-                
+
                 {/* Notification Button dengan Dropdown */}
                 <div className="relative">
-                  <button 
+                  <button
                     onClick={() => {
                       setNotificationOpen(!notificationOpen);
                       setDropdownOpen(false);
@@ -163,7 +165,7 @@ const Navbar = () => {
                       </span>
                     )}
                   </button>
-                  
+
                   {/* Notification Dropdown */}
                   {notificationOpen && (
                     <div className="absolute right-0 mt-2 w-80 bg-white border rounded-lg shadow-lg z-50 max-h-96 overflow-hidden">
@@ -173,7 +175,7 @@ const Navbar = () => {
                           Notifikasi {unreadCount > 0 && `(${unreadCount})`}
                         </h3>
                         {unreadCount > 0 && (
-                          <button 
+                          <button
                             onClick={markAllAsRead}
                             className="text-xs text-primary hover:underline"
                           >
@@ -181,7 +183,7 @@ const Navbar = () => {
                           </button>
                         )}
                       </div>
-                      
+
                       {/* Content */}
                       <div className="max-h-80 overflow-y-auto">
                         {notifications.length > 0 ? (
@@ -197,18 +199,18 @@ const Navbar = () => {
                                 <span className="text-lg">{getNotificationIcon(notif.type)}</span>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between">
-                                    <p className={`text-sm font-medium ${
-                                      notif.urgent ? 'text-red-700' : 'text-gray-900'
-                                    }`}>
+                                    <p
+                                      className={`text-sm font-medium ${
+                                        notif.urgent ? 'text-red-700' : 'text-gray-900'
+                                      }`}
+                                    >
                                       {notif.title}
                                     </p>
                                     {!notif.isRead && (
                                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                                     )}
                                   </div>
-                                  <p className="text-sm text-gray-600 mt-1">
-                                    {notif.message}
-                                  </p>
+                                  <p className="text-sm text-gray-600 mt-1">{notif.message}</p>
                                   <p className="text-xs text-gray-400 mt-1">{notif.time}</p>
                                 </div>
                               </div>
@@ -221,7 +223,7 @@ const Navbar = () => {
                           </div>
                         )}
                       </div>
-                      
+
                       {/* Footer */}
                       {notifications.length > 0 && (
                         <div className="px-4 py-2 border-t bg-gray-50">
@@ -236,11 +238,12 @@ const Navbar = () => {
 
                 {/* Avatar Dropdown */}
                 <div className="relative ml-2">
-                  <button onClick={() => {
-                    setDropdownOpen(!dropdownOpen);
-                    setNotificationOpen(false);
-                  }}
-                  className="p-2"
+                  <button
+                    onClick={() => {
+                      setDropdownOpen(!dropdownOpen);
+                      setNotificationOpen(false);
+                    }}
+                    className="p-2"
                   >
                     {userData ? (
                       <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
@@ -289,32 +292,40 @@ const Navbar = () => {
           {/* Mobile Hamburger */}
           <div className="md:hidden">
             <button onClick={() => setIsOpen(!isOpen)}>
-              {isOpen ? <X className="w-6 h-6 text-primary" /> : <Menu className="w-6 h-6 text-primary" />}
+              {isOpen ? (
+                <X className="w-6 h-6 text-primary" />
+              ) : (
+                <Menu className="w-6 h-6 text-primary" />
+              )}
             </button>
           </div>
         </div>
-        
+
         {/* Mobile Sidebar Overlay */}
         {isOpen && (
           <div className="fixed inset-0 z-50 md:hidden">
             {/* Backdrop */}
-            <div 
+            <div
               className="fixed inset-0 bg-black bg-opacity-50"
               onClick={() => setIsOpen(false)}
             ></div>
-            
+
             {/* Sidebar */}
             <div className="fixed top-0 left-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out">
               {/* Sidebar Header */}
               <div className="flex items-center justify-between p-4 border-b">
-                <Link to="/" className="text-primary font-bold text-xl" onClick={() => setIsOpen(false)}>
+                <Link
+                  to="/"
+                  className="text-primary font-bold text-xl"
+                  onClick={() => setIsOpen(false)}
+                >
                   DermaSense
                 </Link>
                 <button onClick={() => setIsOpen(false)} className="p-2">
                   <X className="w-5 h-5 text-gray-500" />
                 </button>
               </div>
-              
+
               {/* Sidebar Content */}
               <div className="flex flex-col h-full">
                 {/* User Section */}
@@ -331,7 +342,7 @@ const Navbar = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {/* Navigation Links */}
                 <div className="flex-1 py-4">
                   <div className="space-y-1 px-4">
@@ -344,8 +355,8 @@ const Navbar = () => {
                           key={path}
                           to={path}
                           className={`flex items-center px-3 py-3 rounded-lg text-base font-medium transition-colors ${
-                            isActive 
-                              ? 'text-primary bg-primary/10 border border-primary/20' 
+                            isActive
+                              ? 'text-primary bg-primary/10 border border-primary/20'
                               : 'text-gray-700 hover:text-primary hover:bg-gray-100'
                           }`}
                           onClick={() => setIsOpen(false)}
@@ -355,10 +366,10 @@ const Navbar = () => {
                         </Link>
                       );
                     })}
-                    
+
                     {/* Divider */}
                     <div className="my-4 border-t"></div>
-                    
+
                     {/* User Actions */}
                     {isLoggedIn ? (
                       <>
@@ -370,7 +381,7 @@ const Navbar = () => {
                           <History className="w-5 h-5 mr-3" />
                           History
                         </Link>
-                        
+
                         <button
                           onClick={() => {
                             setNotificationOpen(!notificationOpen);
@@ -388,7 +399,7 @@ const Navbar = () => {
                             </span>
                           )}
                         </button>
-                        
+
                         <Link
                           to="/profile"
                           className="flex items-center px-3 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-100 transition-colors"
@@ -422,7 +433,7 @@ const Navbar = () => {
                     )}
                   </div>
                 </div>
-                
+
                 {/* Footer Actions */}
                 {isLoggedIn && (
                   <div className="border-t p-4">
@@ -439,19 +450,29 @@ const Navbar = () => {
                   </div>
                 )}
               </div>
-              
+
               {/* Notification Section in Sidebar */}
               {notificationOpen && isLoggedIn && (
                 <div className="absolute inset-0 bg-white z-10">
                   {/* Notification Header */}
                   <div className="flex items-center justify-between p-4 border-b">
                     <div className="flex items-center space-x-2">
-                      <button 
+                      <button
                         onClick={() => setNotificationOpen(false)}
                         className="p-1 hover:bg-gray-100 rounded"
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 19l-7-7 7-7"
+                          />
                         </svg>
                       </button>
                       <h3 className="text-lg font-medium text-gray-900">
@@ -459,7 +480,7 @@ const Navbar = () => {
                       </h3>
                     </div>
                     {unreadCount > 0 && (
-                      <button 
+                      <button
                         onClick={markAllAsRead}
                         className="text-sm text-primary hover:underline"
                       >
@@ -467,7 +488,7 @@ const Navbar = () => {
                       </button>
                     )}
                   </div>
-                  
+
                   {/* Notification Content */}
                   <div className="flex-1 overflow-y-auto">
                     {notifications.length > 0 ? (
@@ -483,18 +504,18 @@ const Navbar = () => {
                             <span className="text-lg">{getNotificationIcon(notif.type)}</span>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between">
-                                <p className={`text-sm font-medium ${
-                                  notif.urgent ? 'text-red-700' : 'text-gray-900'
-                                }`}>
+                                <p
+                                  className={`text-sm font-medium ${
+                                    notif.urgent ? 'text-red-700' : 'text-gray-900'
+                                  }`}
+                                >
                                   {notif.title}
                                 </p>
                                 {!notif.isRead && (
                                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                                 )}
                               </div>
-                              <p className="text-sm text-gray-600 mt-1">
-                                {notif.message}
-                              </p>
+                              <p className="text-sm text-gray-600 mt-1">{notif.message}</p>
                               <p className="text-xs text-gray-400 mt-1">{notif.time}</p>
                             </div>
                           </div>

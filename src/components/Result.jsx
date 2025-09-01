@@ -1,15 +1,14 @@
-import React, { useEffect } from "react";
-import { UploadCloud } from "lucide-react";
+import React, { useEffect } from 'react';
+import { UploadCloud } from 'lucide-react';
 
 const Result = ({ resultImage, scanCompleted, scanning, scanResults }) => {
-  
   // Save scan results and date when scan is completed
   useEffect(() => {
     if (scanCompleted && scanResults) {
       try {
         // Get existing scan history from localStorage
         const existingHistory = JSON.parse(localStorage.getItem('scanHistory') || '[]');
-        
+
         // Create new scan record with complete data
         const newScanRecord = {
           id: `scan_${Date.now()}`, // Generate unique ID
@@ -19,23 +18,22 @@ const Result = ({ resultImage, scanCompleted, scanning, scanResults }) => {
           effects: scanResults.effects,
           resultImage: resultImage,
           timestamp: new Date().toISOString(), // Keep original timestamp for sorting
-          createdAt: scanResults.date // Use formatted date from scan results
+          createdAt: scanResults.date, // Use formatted date from scan results
         };
-        
+
         // Add to beginning of array (newest first)
         existingHistory.unshift(newScanRecord);
-        
+
         // Keep only last 50 records to prevent storage overflow
         const trimmedHistory = existingHistory.slice(0, 50);
-        
+
         // Save back to localStorage
         localStorage.setItem('scanHistory', JSON.stringify(trimmedHistory));
-        
+
         console.log('✅ Saved scan to localStorage:', newScanRecord);
-        
+
         // Dispatch event to notify history page
         window.dispatchEvent(new CustomEvent('historyUpdated'));
-        
       } catch (error) {
         console.error('Error saving scan to localStorage:', error);
       }
@@ -49,7 +47,11 @@ const Result = ({ resultImage, scanCompleted, scanning, scanResults }) => {
         {/* Image Preview */}
         <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 flex items-center justify-center text-gray-400 min-h-[200px]">
           {resultImage ? (
-            <img src={resultImage} alt="Scan Result" className="rounded-xl max-h-64 object-contain" />
+            <img
+              src={resultImage}
+              alt="Scan Result"
+              className="rounded-xl max-h-64 object-contain"
+            />
           ) : (
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-2 bg-gray-100 rounded-full flex items-center justify-center">
@@ -68,11 +70,11 @@ const Result = ({ resultImage, scanCompleted, scanning, scanResults }) => {
                 <h3 className="font-semibold text-lg text-gray-800">{scanResults.diagnosis}</h3>
                 <span
                   className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    scanResults.severity === "Tinggi"
-                      ? "bg-red-100 text-red-600"
-                      : scanResults.severity === "Sedang"
-                      ? "bg-yellow-100 text-yellow-600"
-                      : "bg-green-100 text-green-600"
+                    scanResults.severity === 'Tinggi'
+                      ? 'bg-red-100 text-red-600'
+                      : scanResults.severity === 'Sedang'
+                        ? 'bg-yellow-100 text-yellow-600'
+                        : 'bg-green-100 text-green-600'
                   }`}
                 >
                   {scanResults.severity}
@@ -100,7 +102,7 @@ const Result = ({ resultImage, scanCompleted, scanning, scanResults }) => {
           ) : (
             <div>
               <p className="text-gray-600 mb-3">
-                {scanning ? "Analyzing your image..." : "Waiting for your scanning . . ."}
+                {scanning ? 'Analyzing your image...' : 'Waiting for your scanning . . .'}
               </p>
               <table className="w-full border-collapse">
                 <thead>

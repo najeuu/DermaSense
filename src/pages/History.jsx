@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { Calendar, Eye, Download, Trash2, AlertCircle, RefreshCw } from "lucide-react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import React, { useState, useEffect } from 'react';
+import { Calendar, Eye, Download, Trash2, AlertCircle, RefreshCw } from 'lucide-react';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 const History = () => {
   const [histories, setHistories] = useState([]);
@@ -15,18 +15,18 @@ const History = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // 1. Get scan history from localStorage (new scans)
       const localHistory = JSON.parse(localStorage.getItem('scanHistory') || '[]');
       console.log('📦 Loaded LOCAL history:', localHistory);
-      
-      // 2. Get history from API (old scans from database)  
+
+      // 2. Get history from API (old scans from database)
       let apiHistory = [];
       try {
-        const { getHistory } = await import("../utils/axiosConfig");
+        const { getHistory } = await import('../utils/axiosConfig');
         const rawApiHistory = await getHistory();
         console.log('🌐 Raw API response:', rawApiHistory);
-        
+
         // Handle case where API returns message instead of array
         if (Array.isArray(rawApiHistory)) {
           apiHistory = rawApiHistory;
@@ -36,89 +36,89 @@ const History = () => {
         } else {
           apiHistory = [];
         }
-        
+
         console.log('🌐 Processed API history:', apiHistory);
       } catch (apiError) {
         console.log('⚠️ Could not load API history:', apiError.message);
         // Continue with localStorage only
       }
-      
+
       // 3. Process localStorage data
       const processedLocalData = localHistory.map((item) => {
         const findEffect = (name) => {
-          const effect = item.effects?.find(e => e.name === name);
+          const effect = item.effects?.find((e) => e.name === name);
           return effect ? parseInt(effect.percentage) || 0 : 0;
         };
-        
+
         return {
           _id: item.id,
           createdAt: item.date, // Use exact date from scan results
           originalImagePath: item.resultImage, // Use base64 image
           kemerahanPercent: findEffect('Kemerahan'),
-          gatalPercent: findEffect('Menggaruk'), 
+          gatalPercent: findEffect('Menggaruk'),
           ketebalanPercent: findEffect('Ketebalan'),
           likenifikasiPercent: findEffect('Likenifikasi'),
           keparahanResult: {
-            kelas: item.severity
+            kelas: item.severity,
           },
           summary: `Diagnosis: ${item.diagnosis}. Tingkat keparahan: ${item.severity}.`,
           diagnosis: item.diagnosis,
           severity: item.severity,
           isFromLocalStorage: true,
-          scanDate: item.timestamp // Keep original timestamp for deduplication
+          scanDate: item.timestamp, // Keep original timestamp for deduplication
         };
       });
-      
+
       // 4. Process API data (OLD scans from database - keep original dates)
       const processedApiData = apiHistory.map((item) => {
         // Extract date from MongoDB _id if no explicit date fields
         const mongoDate = new Date(parseInt(item._id.substring(0, 8), 16) * 1000);
-        
+
         return {
           ...item,
-          // Priority untuk tanggal: predictionDate > createdAt > MongoDB _id timestamp  
+          // Priority untuk tanggal: predictionDate > createdAt > MongoDB _id timestamp
           createdAt: item.predictionDate || item.createdAt || mongoDate.toISOString(),
           originalImagePath: item.originalImagePath, // Already full URL from backend
           isFromLocalStorage: false,
           scanDate: item.predictionDate || item.createdAt || mongoDate.toISOString(),
           // Keep all original database fields
           kemerahanPercent: parseInt(item.kemerahanPercent) || 0,
-          gatalPercent: parseInt(item.gatalPercent) || 0, 
+          gatalPercent: parseInt(item.gatalPercent) || 0,
           ketebalanPercent: parseInt(item.ketebalanPercent) || 0,
           likenifikasiPercent: parseInt(item.likenifikasiPercent) || 0,
           keparahanResult: item.keparahanResult || { kelas: 'Ringan' },
           summary: item.summary || 'Pemeriksaan kulit dari database',
           // Add database identifier
-          fromDatabase: true
+          fromDatabase: true,
         };
       });
-      
+
       // 5. Avoid duplicates by time proximity and better deduplication
-      const localTimestamps = processedLocalData.map(item => item.scanTime || 0);
-      
+      const localTimestamps = processedLocalData.map((item) => item.scanTime || 0);
+
       // Filter API data to avoid duplicates
-      const filteredApiData = processedApiData.filter(apiItem => {
+      const filteredApiData = processedApiData.filter((apiItem) => {
         // Check if there's a localStorage scan very close in time
         const apiTimestamp = apiItem.actualTimestamp;
-        
-        const hasNearbyLocalScan = localTimestamps.some(localTime => 
-          Math.abs(localTime - apiTimestamp) < 300000 // Within 5 minutes
+
+        const hasNearbyLocalScan = localTimestamps.some(
+          (localTime) => Math.abs(localTime - apiTimestamp) < 300000, // Within 5 minutes
         );
-        
+
         if (hasNearbyLocalScan) {
           console.log(`Skipping potential duplicate API scan: ${apiItem._id}`);
           return false;
         }
         return true;
       });
-      
+
       // 6. Combine and sort by date (newest first)
       const combinedHistory = [...processedLocalData, ...filteredApiData];
-      
+
       // Sort by actual scan date/timestamp
       combinedHistory.sort((a, b) => {
         let dateA, dateB;
-        
+
         if (a.isFromLocalStorage) {
           // For localStorage items, use timestamp for accurate sorting
           dateA = new Date(a.timestamp);
@@ -126,21 +126,22 @@ const History = () => {
           // For API items, use scanDate (predictionDate from database)
           dateA = new Date(a.scanDate);
         }
-        
+
         if (b.isFromLocalStorage) {
-          dateB = new Date(b.timestamp);  
+          dateB = new Date(b.timestamp);
         } else {
           dateB = new Date(b.scanDate);
         }
-        
+
         return dateB - dateA; // Newest first
       });
-      
+
       console.log('✅ Final combined history:', combinedHistory);
-      console.log(`📊 Total: ${combinedHistory.length} (${processedLocalData.length} local + ${filteredApiData.length} API)`);
-      
+      console.log(
+        `📊 Total: ${combinedHistory.length} (${processedLocalData.length} local + ${filteredApiData.length} API)`,
+      );
+
       setHistories(combinedHistory);
-      
     } catch (err) {
       console.error('❌ Error loading history:', err);
       setError('Gagal memuat riwayat. Silakan coba lagi.');
@@ -151,15 +152,15 @@ const History = () => {
 
   useEffect(() => {
     loadHistory();
-    
+
     // Listen for history updates from scan page
     const handleHistoryUpdate = () => {
       console.log('🔄 History update event received, reloading...');
       loadHistory();
     };
-    
+
     window.addEventListener('historyUpdated', handleHistoryUpdate);
-    
+
     return () => {
       window.removeEventListener('historyUpdated', handleHistoryUpdate);
     };
@@ -168,17 +169,17 @@ const History = () => {
   // Get base URL for images (handle base64 images)
   const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
-    
+
     // If it's base64 data, return as is
     if (imagePath.startsWith('data:image/')) {
       return imagePath;
     }
-    
+
     // If it's already a full URL, return as is
     if (imagePath.startsWith('http')) {
       return imagePath;
     }
-    
+
     // If it's a relative path, construct full URL
     const baseUrl = `${window.location.protocol}//${window.location.host}`;
     return `${baseUrl}${imagePath}`;
@@ -187,33 +188,34 @@ const History = () => {
   // Simple date formatting - use as is from scan results
   const formatDate = (dateString) => {
     if (!dateString) {
-      return "Tanggal tidak tersedia";
+      return 'Tanggal tidak tersedia';
     }
-    
+
     // If it's already formatted (contains "WIB"), return as is
     if (typeof dateString === 'string' && dateString.includes('WIB')) {
       return dateString;
     }
-    
+
     try {
       const date = new Date(dateString);
-      
+
       if (isNaN(date.getTime())) {
-        return "Format tanggal tidak valid";
+        return 'Format tanggal tidak valid';
       }
-      
-      return date.toLocaleDateString("id-ID", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      }) + " WIB";
-      
+
+      return (
+        date.toLocaleDateString('id-ID', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }) + ' WIB'
+      );
     } catch (error) {
       console.error('Date formatting error:', error);
-      return "Error format tanggal";
+      return 'Error format tanggal';
     }
   };
 
@@ -291,12 +293,12 @@ const History = () => {
 
   // Clear only localStorage history
   const clearHistory = () => {
-    const localCount = histories.filter(h => h.isFromLocalStorage).length;
+    const localCount = histories.filter((h) => h.isFromLocalStorage).length;
     if (localCount === 0) {
       alert('Tidak ada riwayat baru yang bisa dihapus.');
       return;
     }
-    
+
     if (window.confirm(`Apakah Anda yakin ingin menghapus ${localCount} riwayat scan baru?`)) {
       localStorage.removeItem('scanHistory');
       loadHistory(); // Reload to show only API data
@@ -341,11 +343,11 @@ const History = () => {
                 <span>Total: {histories.length} pemeriksaan</span>
                 <span className="mx-2">•</span>
                 <span className="text-green-600">
-                  {histories.filter(h => h.isFromLocalStorage).length} baru
+                  {histories.filter((h) => h.isFromLocalStorage).length} baru
                 </span>
                 <span className="mx-2">•</span>
                 <span className="text-blue-600">
-                  {histories.filter(h => !h.isFromLocalStorage).length} lama
+                  {histories.filter((h) => !h.isFromLocalStorage).length} lama
                 </span>
               </div>
               <button
@@ -385,7 +387,7 @@ const History = () => {
                 Mulai pemeriksaan pertama Anda untuk melihat riwayat di sini.
               </p>
               <button
-                onClick={() => window.location.href = '/scan'}
+                onClick={() => (window.location.href = '/scan')}
                 className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-teal-600 transition"
               >
                 Mulai Pemeriksaan
@@ -395,7 +397,7 @@ const History = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {histories.map((history) => {
                 const imageUrl = getImageUrl(history.originalImagePath);
-                
+
                 return (
                   <div
                     key={history._id}
@@ -409,7 +411,8 @@ const History = () => {
                           alt="Hasil scan"
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2VlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+R2FtYmFyPC90ZXh0Pjwvc3ZnPg==';
+                            e.target.src =
+                              'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2VlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+R2FtYmFyPC90ZXh0Pjwvc3ZnPg==';
                           }}
                         />
                       ) : (
@@ -417,10 +420,12 @@ const History = () => {
                           <Calendar size={32} />
                         </div>
                       )}
-                      
+
                       {/* Severity badge */}
                       <div className="absolute top-2 right-2">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getSeverityColor(history.keparahanResult?.kelas || history.severity)}`}>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${getSeverityColor(history.keparahanResult?.kelas || history.severity)}`}
+                        >
                           {getSeverityText(history.keparahanResult?.kelas || history.severity)}
                         </span>
                       </div>
@@ -437,11 +442,11 @@ const History = () => {
                           </span>
                         )}
                       </div>
-                      
+
                       <h3 className="font-semibold text-gray-800 mb-2">
-                        {history.diagnosis || "Pemeriksaan Kulit"}
+                        {history.diagnosis || 'Pemeriksaan Kulit'}
                       </h3>
-                      
+
                       {/* Quick stats */}
                       <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-4">
                         <div>Kemerahan: {history.kemerahanPercent}%</div>
@@ -494,7 +499,8 @@ const History = () => {
                     alt="Hasil scan detail"
                     className="w-full rounded-xl"
                     onError={(e) => {
-                      e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2VlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+R2FtYmFyPC90ZXh0Pjwvc3ZnPg==';
+                      e.target.src =
+                        'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2VlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+R2FtYmFyPC90ZXh0Pjwvc3ZnPg==';
                     }}
                   />
                 </div>
@@ -503,13 +509,17 @@ const History = () => {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-semibold text-lg text-gray-800">
-                      {selectedHistory.diagnosis || "Hasil Analisis Kulit"}
+                      {selectedHistory.diagnosis || 'Hasil Analisis Kulit'}
                     </h3>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getSeverityColor(selectedHistory.keparahanResult?.kelas || selectedHistory.severity)}`}>
-                      {getSeverityText(selectedHistory.keparahanResult?.kelas || selectedHistory.severity)}
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${getSeverityColor(selectedHistory.keparahanResult?.kelas || selectedHistory.severity)}`}
+                    >
+                      {getSeverityText(
+                        selectedHistory.keparahanResult?.kelas || selectedHistory.severity,
+                      )}
                     </span>
                   </div>
-                  
+
                   <p className="text-gray-500 text-sm mb-4">
                     {formatDate(selectedHistory.createdAt)}
                   </p>
@@ -525,19 +535,27 @@ const History = () => {
                     <tbody className="text-gray-700">
                       <tr className="border-b border-gray-100">
                         <td className="py-3">Kemerahan</td>
-                        <td className="py-3 text-primary font-medium">{selectedHistory.kemerahanPercent}%</td>
+                        <td className="py-3 text-primary font-medium">
+                          {selectedHistory.kemerahanPercent}%
+                        </td>
                       </tr>
                       <tr className="border-b border-gray-100">
                         <td className="py-3">Menggaruk</td>
-                        <td className="py-3 text-primary font-medium">{selectedHistory.gatalPercent}%</td>
+                        <td className="py-3 text-primary font-medium">
+                          {selectedHistory.gatalPercent}%
+                        </td>
                       </tr>
                       <tr className="border-b border-gray-100">
                         <td className="py-3">Ketebalan</td>
-                        <td className="py-3 text-primary font-medium">{selectedHistory.ketebalanPercent}%</td>
+                        <td className="py-3 text-primary font-medium">
+                          {selectedHistory.ketebalanPercent}%
+                        </td>
                       </tr>
                       <tr>
                         <td className="py-3">Likenifikasi</td>
-                        <td className="py-3 text-primary font-medium">{selectedHistory.likenifikasiPercent}%</td>
+                        <td className="py-3 text-primary font-medium">
+                          {selectedHistory.likenifikasiPercent}%
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -551,10 +569,12 @@ const History = () => {
                   {/* Action buttons */}
                   <div className="flex gap-3 mt-4">
                     <button
-                      onClick={() => downloadImage(
-                        getImageUrl(selectedHistory.originalImagePath), 
-                        `scan-${selectedHistory._id}.jpg`
-                      )}
+                      onClick={() =>
+                        downloadImage(
+                          getImageUrl(selectedHistory.originalImagePath),
+                          `scan-${selectedHistory._id}.jpg`,
+                        )
+                      }
                       className="bg-primary text-white py-2 px-4 rounded-lg hover:bg-teal-600 transition flex items-center justify-center gap-2"
                     >
                       <Download size={16} />

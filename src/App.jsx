@@ -1,18 +1,18 @@
 // src/App.js
-import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Home from "./pages/Home.jsx";
-import Login from "./pages/Login.jsx";
-import Register from "./pages/Register.jsx";
-import Scan from "./pages/Scan.jsx";
-import Article from "./pages/Article.jsx";
-import DetailArticle from "./pages/ArticleDetail.jsx";
-import Profile from "./pages/Profile.jsx";
-import History from "./pages/History.jsx";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Home from './pages/Home.jsx';
+import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
+import Scan from './pages/Scan.jsx';
+import Article from './pages/Article.jsx';
+import DetailArticle from './pages/ArticleDetail.jsx';
+import Profile from './pages/Profile.jsx';
+import History from './pages/History.jsx';
 
 // Komponen ProtectedRoute
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token"); // atau cek dari cookies
+  const token = localStorage.getItem('token'); // atau cek dari cookies
   if (!token) {
     return <Navigate to="/login" replace />;
   }
