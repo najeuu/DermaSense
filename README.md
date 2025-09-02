@@ -16,7 +16,7 @@ Hasil deteksi disajikan secara ringkas dan juga disimpan sebagai riwayat penggun
 1. Clone repositori:
 
 ```bash
-git clone https://github.com/najeuu/dermasense.git
+git clone https://github.com/najeuu/DermaSense.git
 ```
 
 2. Masuk ke direktori proyek:
