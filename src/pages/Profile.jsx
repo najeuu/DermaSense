@@ -1,8 +1,8 @@
 // src/pages/Profile.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Mail, User, Calendar, Lock, MapPin } from 'lucide-react';
+import { Mail, User, Lock, MapPin } from 'lucide-react';
 import { getProfile, updateProfile, changePassword } from '../utils/axiosConfig';
 
 const Profile = () => {
@@ -13,7 +13,6 @@ const Profile = () => {
     gender: '',
     location: '',
   });
-
   const [formData, setFormData] = useState({
     email: '',
     gender: '',
@@ -22,7 +21,6 @@ const Profile = () => {
     newPassword: '',
     confirmPassword: '',
   });
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -31,35 +29,33 @@ const Profile = () => {
       alert('Browser tidak mendukung geolocation.');
       return;
     }
-
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude: lat, longitude: lon } = position.coords;
-
         try {
           const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
           );
           const data = await response.json();
           const city =
-            data.address.city || data.address.town || data.address.village || data.display_name;
-
+            data.address?.city || data.address?.town || data.address?.village || data.display_name;
           setFormData((prev) => ({ ...prev, location: city }));
           setUserData((prev) => ({ ...prev, location: city }));
-        } catch (err) {
+        } catch (locationError) {
+          console.error('Error getting location:', locationError);
           alert('Gagal mendapatkan nama kota.');
         }
       },
-      (error) => {
+      (geolocationError) => {
+        console.error('Geolocation error:', geolocationError);
         alert('Gagal mendapatkan lokasi. Pastikan GPS/Location diaktifkan.');
       },
     );
   };
 
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     try {
       const profileData = await getProfile();
-
       if (profileData) {
         const userInfo = {
           name: profileData.name || 'Nama Pengguna',
@@ -68,7 +64,6 @@ const Profile = () => {
           gender: profileData.gender || '',
           location: profileData.location || '',
         };
-
         setUserData(userInfo);
         setFormData({
           email: userInfo.email,
@@ -78,19 +73,19 @@ const Profile = () => {
           newPassword: '',
           confirmPassword: '',
         });
-
         getDeviceLocation();
       }
-    } catch (err) {
+    } catch (fetchError) {
+      console.error('Error fetching profile:', fetchError);
       setError('Tidak dapat memuat data profil');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchUserData();
-  }, []);
+  }, [fetchUserData]);
 
   const getInitials = (name, email) => {
     if (name) return name.charAt(0).toUpperCase();
@@ -112,7 +107,7 @@ const Profile = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
-
+    
     try {
       // Update profil utama
       await updateProfile({
@@ -127,7 +122,6 @@ const Profile = () => {
         if (formData.newPassword !== formData.confirmPassword) {
           throw new Error('Password tidak cocok');
         }
-
         await changePassword({
           newPassword: formData.newPassword,
           currentPassword: '',
@@ -136,7 +130,7 @@ const Profile = () => {
 
       alert('Profil berhasil diperbarui!');
       setFormData((prev) => ({ ...prev, newPassword: '', confirmPassword: '' }));
-
+      
       // Refresh data profil
       const updatedProfile = await getProfile();
       setUserData({
@@ -146,8 +140,9 @@ const Profile = () => {
         gender: updatedProfile.gender || '',
         location: updatedProfile.location || '',
       });
-    } catch (err) {
-      setError(err.message || 'Gagal memperbarui profil');
+    } catch (updateError) {
+      console.error('Error updating profile:', updateError);
+      setError(updateError.message || 'Gagal memperbarui profil');
     } finally {
       setLoading(false);
     }
@@ -171,7 +166,6 @@ const Profile = () => {
   return (
     <div className="font-poppins bg-[#F9FAFB] min-h-screen flex flex-col">
       <Navbar />
-
       {error && (
         <div className="max-w-7xl mx-auto w-full px-6 pt-6">
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -179,17 +173,14 @@ const Profile = () => {
           </div>
         </div>
       )}
-
       <div className="flex flex-1 max-w-7xl mx-auto w-full p-6 gap-6 flex-col lg:flex-row">
         {/* Sidebar Profil */}
         <aside className="bg-white shadow rounded-2xl p-6 w-full lg:w-1/3 flex flex-col items-center mb-6 lg:mb-0">
           <div className="w-28 h-28 rounded-full bg-primary text-white flex items-center justify-center text-2xl font-bold">
             {getInitials(userData.name, userData.email)}
           </div>
-
           <h2 className="text-lg font-semibold mt-4">{userData.name}</h2>
           <p className="text-gray-500 text-sm">{generateUsername(userData.name, userData.email)}</p>
-
           <div className="mt-6 space-y-3 w-full">
             <div className="flex items-center gap-2 text-gray-600">
               <Mail size={18} />
@@ -200,17 +191,14 @@ const Profile = () => {
                 {userData.email}
               </a>
             </div>
-
             <div className="flex items-center gap-2 text-gray-600">
-              <Calendar size={18} />
+              <User size={18} />
               <span>{userData.age ? `${userData.age} Tahun` : 'Umur belum diatur'}</span>
             </div>
-
             <div className="flex items-center gap-2 text-gray-600">
               <User size={18} />
               <span>{userData.gender || 'Jenis kelamin belum diatur'}</span>
             </div>
-
             <div className="flex items-center gap-2 text-gray-600">
               <MapPin size={18} />
               <span>{userData.location || 'Lokasi belum diatur'}</span>
@@ -221,7 +209,6 @@ const Profile = () => {
         {/* Form Edit Profil */}
         <main className="flex-1 bg-white shadow rounded-2xl p-6">
           <h3 className="text-xl font-semibold mb-4">Edit Profil</h3>
-
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Info Pengguna */}
             <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg">
@@ -356,7 +343,6 @@ const Profile = () => {
           </form>
         </main>
       </div>
-
       <Footer />
     </div>
   );
