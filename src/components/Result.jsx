@@ -30,12 +30,10 @@ const Result = ({ resultImage, scanCompleted, scanning, scanResults }) => {
         // Save back to localStorage
         localStorage.setItem('scanHistory', JSON.stringify(trimmedHistory));
 
-        console.log('✅ Saved scan to localStorage:', newScanRecord);
-
         // Dispatch event to notify history page
         window.dispatchEvent(new CustomEvent('historyUpdated'));
-      } catch (error) {
-        console.error('Error saving scan to localStorage:', error);
+      } catch {
+        // Error suppressed
       }
     }
   }, [scanCompleted, scanResults, resultImage]);
@@ -117,7 +115,7 @@ const Result = ({ resultImage, scanCompleted, scanning, scanResults }) => {
                     <td className="py-3 text-gray-400">-</td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-3">Menggaruk</td>
+                    <td className="py-3">Pruritus</td>
                     <td className="py-3 text-gray-400">-</td>
                   </tr>
                   <tr className="border-b border-gray-100">

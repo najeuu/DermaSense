@@ -23,7 +23,6 @@ const Scan = () => {
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
-  // Handle file upload
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith('image/')) {
@@ -43,7 +42,6 @@ const Scan = () => {
 
   const handleUploadClick = () => fileInputRef.current?.click();
 
-  // Camera capture
   const handleCameraCapture = async () => {
     try {
       const imageData = await captureFromCamera();
@@ -51,7 +49,6 @@ const Scan = () => {
       setFileName('camera-capture.jpg');
       setError(null);
 
-      // Convert base64 to file for API
       const response = await fetch(imageData);
       const blob = await response.blob();
       const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
@@ -72,7 +69,6 @@ const Scan = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // Process API response to match UI format
   const processApiResponse = (apiData) => {
     try {
       const effects = [];
@@ -84,11 +80,10 @@ const Scan = () => {
       const likenifikasi = parseFloat(detailPrediction.likenifikasi) || 0;
 
       effects.push({ name: 'Kemerahan', percentage: `${Math.round(kemerahan)}%` });
-      effects.push({ name: 'Menggaruk', percentage: `${Math.round(gatal)}%` });
+      effects.push({ name: 'Pruritus', percentage: `${Math.round(gatal)}%` });
       effects.push({ name: 'Ketebalan', percentage: `${Math.round(ketebalan)}%` });
       effects.push({ name: 'Likenifikasi', percentage: `${Math.round(likenifikasi)}%` });
 
-      // Determine severity
       let severity = 'Ringan';
       if (detailPrediction.keparahan?.kelas) {
         const backendSeverity = detailPrediction.keparahan.kelas.toLowerCase();
@@ -101,13 +96,11 @@ const Scan = () => {
         else if (maxPercentage > 30) severity = 'Sedang';
       }
 
-      // Diagnosis
       let diagnosis = 'Kondisi Kulit Terdeteksi';
       if (detailPrediction.keparahan?.kelas) {
         diagnosis = `Analisis Kulit - ${detailPrediction.keparahan.kelas}`;
       }
 
-      // Date
       const now = new Date();
       const formattedDate =
         now.toLocaleDateString('id-ID', {
@@ -127,7 +120,7 @@ const Scan = () => {
         severity: 'Tidak diketahui',
         effects: [
           { name: 'Kemerahan', percentage: '0%' },
-          { name: 'Menggaruk', percentage: '0%' },
+          { name: 'Pruritus', percentage: '0%' },
           { name: 'Ketebalan', percentage: '0%' },
           { name: 'Likenifikasi', percentage: '0%' },
         ],
@@ -135,7 +128,6 @@ const Scan = () => {
     }
   };
 
-  // Handle scan with API integration
   const handleScan = async () => {
     if (!preview || !uploadedFile) {
       const msg = 'Silakan upload foto dulu!';
@@ -144,10 +136,7 @@ const Scan = () => {
       return;
     }
 
-    // Move preview to result area
     setResultImage(preview);
-
-    // Reset upload area
     setPreview(null);
     setFileName('');
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -159,18 +148,15 @@ const Scan = () => {
     try {
       const response = await predictImage(uploadedFile, 0.5);
 
-      // Store scan date with unique identifier
       const scanDate = new Date().toISOString();
       const scanId = response._id || response.id || `scan_${Date.now()}`;
       const existingDates = JSON.parse(localStorage.getItem('scanDates') || '{}');
       existingDates[scanId] = scanDate;
       localStorage.setItem('scanDates', JSON.stringify(existingDates));
 
-      // Process response for UI
       const processedResults = processApiResponse(response);
       setScanResults(processedResults);
 
-      // Loading simulation for better UX
       setTimeout(() => {
         setScanning(false);
         setScanCompleted(true);
@@ -178,8 +164,6 @@ const Scan = () => {
       }, 1500);
     } catch (error) {
       setScanning(false);
-
-      // Error handling
       let errorMessage = 'Terjadi kesalahan saat memproses gambar.';
       if (error.message?.includes('connect') || error.message?.includes('network')) {
         errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
@@ -195,8 +179,6 @@ const Scan = () => {
 
       setError(errorMessage);
       alert(errorMessage);
-
-      // Reset states on error
       setPreview(resultImage);
       setResultImage(null);
     } finally {
@@ -208,7 +190,6 @@ const Scan = () => {
     <div className="font-poppins bg-[#FCFFFE] min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1 flex flex-col items-center px-4 py-8">
-        {/* Title */}
         <div className="text-center mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold">
             <span className="text-primary">Welcome to </span>
@@ -220,18 +201,15 @@ const Scan = () => {
           </p>
         </div>
 
-        {/* Error Alert */}
         {error && (
           <div className="w-full max-w-4xl bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
             <p className="text-sm">{error}</p>
           </div>
         )}
 
-        {/* Upload Section */}
         <div className="w-full max-w-4xl bg-white rounded-2xl shadow-md p-6 mb-10">
           <h2 className="font-semibold text-lg text-gray-800 mb-4">Upload</h2>
 
-          {/* Upload Box */}
           <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center text-gray-500 hover:border-primary transition">
             {preview ? (
               <div className="relative">
@@ -259,7 +237,6 @@ const Scan = () => {
               </div>
             )}
 
-            {/* Action Buttons */}
             <div className="flex gap-3 mt-4">
               {!preview && (
                 <button
@@ -294,7 +271,6 @@ const Scan = () => {
             </div>
           </div>
 
-          {/* Hidden Input File */}
           <input
             type="file"
             accept="image/*"
@@ -303,7 +279,6 @@ const Scan = () => {
             onChange={handleFileChange}
           />
 
-          {/* Scan Button */}
           <div className="flex justify-center mt-6">
             <button
               onClick={handleScan}
@@ -326,15 +301,12 @@ const Scan = () => {
           </div>
         </div>
 
-        {/* Result Section */}
         <Result
           resultImage={resultImage}
           scanCompleted={scanCompleted}
           scanning={scanning}
           scanResults={scanResults}
         />
-
-        {/* Solution Area */}
         <Solution scanCompleted={scanCompleted} scanResults={scanResults} />
       </main>
       <Footer />

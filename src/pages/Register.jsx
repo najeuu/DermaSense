@@ -111,7 +111,7 @@ const Register = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-3xl flex flex-col md:flex-row overflow-hidden">
         {/* Left Illustration */}
-        <div className="hidden md:flex w-1/2 bg-[#D6FFED] flex-col items-center justify-center p-6">
+        <div className="hidden md:flex w-1/2 bg-[#C1F5DD] flex-col items-center justify-center p-6">
           <img
             src={registerIllustration}
             alt="Sign up illustration"

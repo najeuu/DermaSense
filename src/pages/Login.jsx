@@ -30,17 +30,13 @@ const Login = () => {
         throw new Error('Please fill in all fields');
       }
 
-      const res = await authService.login({
+      await authService.login({
         email: formData.email,
         password: formData.password,
       });
 
-      console.log('✅ Login Berhasil:', res.data);
-
-      // Redirect setelah login sukses
       navigate('/');
     } catch (err) {
-      console.error('❌ Login Gagal:', err);
       setError(err.response?.data?.message || 'Login gagal');
     } finally {
       setLoading(false);
@@ -51,7 +47,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 px-4 py-8">
       <div className="bg-white/90 backdrop-blur-sm shadow-xl border border-gray-200/50 rounded-2xl overflow-hidden w-full max-w-3xl flex">
         {/* Left Illustration - Hidden on mobile */}
-        <div className="hidden md:flex w-1/2 bg-[#D6FFED] flex-col items-center justify-center p-6">
+        <div className="hidden md:flex w-1/2 bg-[#C1F5DD] flex-col items-center justify-center p-6">
           <img
             src={loginIllustration}
             alt="Login Illustration"
