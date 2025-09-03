@@ -10,69 +10,43 @@ const History = () => {
   const [selectedHistory, setSelectedHistory] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  const loadHistory = async () => {
+const loadHistory = async () => {
+  try {
+    setLoading(true);
+    setError(null);
+
+    let apiHistory = [];
     try {
-      setLoading(true);
-      setError(null);
+      const { getHistory } = await import('../utils/axiosConfig');
+      const rawApiHistory = await getHistory();
+      if (Array.isArray(rawApiHistory)) apiHistory = rawApiHistory;
+    } catch {}
 
-      const localHistory = JSON.parse(localStorage.getItem('scanHistory') || '[]');
+    const processedApiData = apiHistory.map((item) => {
+      const mongoDate = new Date(parseInt(item._id.substring(0, 8), 16) * 1000);
 
-      let apiHistory = [];
-      try {
-        const { getHistory } = await import('../utils/axiosConfig');
-        const rawApiHistory = await getHistory();
-        if (Array.isArray(rawApiHistory)) apiHistory = rawApiHistory;
-      } catch {}
+      return {
+        ...item,
+        createdAt: item.predictionDate || item.createdAt || mongoDate.toISOString(),
+        scanDate: item.predictionDate || item.createdAt || mongoDate.toISOString(),
+        kemerahanPercent: parseInt(item.kemerahanPercent) || 0,
+        gatalPercent: parseInt(item.gatalPercent) || 0,
+        ketebalanPercent: parseInt(item.ketebalanPercent) || 0,
+        likenifikasiPercent: parseInt(item.likenifikasiPercent) || 0,
+        keparahanResult: item.keparahanResult || { kelas: 'Ringan' },
+        summary: item.summary || 'Pemeriksaan kulit dari database',
+      };
+    });
 
-      const processedLocalData = localHistory.map((item) => {
-        const findEffect = (name) => {
-          const effect = item.effects?.find((e) => e.name === name);
-          return effect ? parseInt(effect.percentage) || 0 : 0;
-        };
+    processedApiData.sort((a, b) => new Date(b.scanDate) - new Date(a.scanDate));
 
-        return {
-          _id: item.id,
-          createdAt: item.date,
-          originalImagePath: item.resultImage,
-          kemerahanPercent: findEffect('Kemerahan'),
-          gatalPercent: findEffect('Pruritus'),
-          ketebalanPercent: findEffect('Ketebalan'),
-          likenifikasiPercent: findEffect('Likenifikasi'),
-          keparahanResult: { kelas: item.severity },
-          summary: `Diagnosis: ${item.diagnosis}. Tingkat keparahan: ${item.severity}.`,
-          diagnosis: item.diagnosis,
-          severity: item.severity,
-          scanDate: item.timestamp,
-        };
-      });
-
-      const processedApiData = apiHistory.map((item) => {
-        const mongoDate = new Date(parseInt(item._id.substring(0, 8), 16) * 1000);
-        return {
-          ...item,
-          createdAt: item.predictionDate || item.createdAt || mongoDate.toISOString(),
-          originalImagePath: item.originalImagePath,
-          scanDate: item.predictionDate || item.createdAt || mongoDate.toISOString(),
-          kemerahanPercent: parseInt(item.kemerahanPercent) || 0,
-          gatalPercent: parseInt(item.gatalPercent) || 0,
-          ketebalanPercent: parseInt(item.ketebalanPercent) || 0,
-          likenifikasiPercent: parseInt(item.likenifikasiPercent) || 0,
-          keparahanResult: item.keparahanResult || { kelas: 'Ringan' },
-          summary: item.summary || 'Pemeriksaan kulit dari database',
-        };
-      });
-
-      const combinedHistory = [...processedLocalData, ...processedApiData];
-
-      combinedHistory.sort((a, b) => new Date(b.scanDate) - new Date(a.scanDate));
-
-      setHistories(combinedHistory);
-    } catch {
-      setError('Gagal memuat riwayat. Silakan coba lagi.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    setHistories(processedApiData);
+  } catch {
+    setError('Gagal memuat riwayat. Silakan coba lagi.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     loadHistory();
