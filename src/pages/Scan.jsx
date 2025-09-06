@@ -62,12 +62,10 @@ const Scan = () => {
     const file = e.target.files[0];
     
     if (!file) return;
-
     if (!isImageFile(file)) {
       showError('Hanya file gambar yang diperbolehkan!');
       return;
     }
-
     processSelectedFile(file);
   };
 
@@ -75,7 +73,6 @@ const Scan = () => {
     setFileName(file.name);
     setUploadedFile(file);
     setError(null);
-
     const reader = new FileReader();
     reader.onloadend = () => setPreview(reader.result);
     reader.readAsDataURL(file);
@@ -90,7 +87,6 @@ const Scan = () => {
       const response = await fetch(imageData);
       const blob = await response.blob();
       const file = createFileFromBlob(blob, 'camera-capture.jpg');
-
       setPreview(imageData);
       setFileName('camera-capture.jpg');
       setUploadedFile(file);
@@ -106,27 +102,74 @@ const Scan = () => {
     clearAllStates();
   };
 
+  // Updated: More lenient check for "not detected"
+  const isNotDetected = (apiData) => {
+    const detailPrediction = apiData.detailedPrediction || {};
+    
+    // Only consider it "not detected" if explicitly stated by backend
+    if (detailPrediction.keparahan?.kelas) {
+      const kelas = detailPrediction.keparahan.kelas.toLowerCase();
+      if (kelas.includes('tidak terdeteksi') || kelas === 'tidak terdeteksi') {
+        return true;
+      }
+    }
+    
+    // Check if all values are extremely low (only if below 5%)
+    const kemerahan = parseFloat(detailPrediction.kemerahan) || 0;
+    const gatal = parseFloat(detailPrediction.gatal) || 0;
+    const ketebalan = parseFloat(detailPrediction.ketebalan) || 0;
+    const likenifikasi = parseFloat(detailPrediction.likenifikasi) || 0;
+    
+    const maxPercentage = Math.max(kemerahan, gatal, ketebalan, likenifikasi);
+    
+    // Only if all values are extremely low (below 5%)
+    if (maxPercentage < 5 && (kemerahan + gatal + ketebalan + likenifikasi) < 10) {
+      return true;
+    }
+    
+    // Check confidence score if available and very low
+    if (apiData.confidence !== undefined && apiData.confidence < 0.1) {
+      return true;
+    }
+    
+    return false;
+  };
+
   // API response processing
   const processApiResponse = (apiData) => {
     try {
       const detailPrediction = apiData.detailedPrediction || {};
-      const effects = extractEffects(detailPrediction);
-      const severity = determineSeverity(detailPrediction, effects);
+      
+      // Check if condition is truly not detected (very strict now)
+      if (isNotDetected(apiData)) {
+        return getNotDetectedResults();
+      }
+      
+      const effects = extractEffects(detailPrediction, apiData);
+      const severity = determineSeverity(detailPrediction, effects, apiData);
       const diagnosis = generateDiagnosis(detailPrediction);
       const date = formatCurrentDate();
-
+      
       return { diagnosis, date, severity, effects };
-    } catch {
+    } catch (error) {
+      console.error('Error processing API response:', error);
       return getErrorScanResults();
     }
   };
+
+  const getNotDetectedResults = () => ({
+    diagnosis: 'Tidak Terdeteksi',
+    date: formatCurrentDate(),
+    severity: 'Tidak Terdeteksi',
+    effects: [], // Empty array for not detected
+  });
 
   const extractEffects = (detailPrediction) => {
     const kemerahan = parseFloat(detailPrediction.kemerahan) || 0;
     const gatal = parseFloat(detailPrediction.gatal) || 0;
     const ketebalan = parseFloat(detailPrediction.ketebalan) || 0;
     const likenifikasi = parseFloat(detailPrediction.likenifikasi) || 0;
-
+    
     return [
       { name: 'Kemerahan', percentage: `${Math.round(kemerahan)}%` },
       { name: 'Pruritus', percentage: `${Math.round(gatal)}%` },
@@ -135,29 +178,37 @@ const Scan = () => {
     ];
   };
 
+  // Updated: Map severity levels correctly
   const determineSeverity = (detailPrediction, effects) => {
     if (detailPrediction.keparahan?.kelas) {
       const backendSeverity = detailPrediction.keparahan.kelas.toLowerCase();
+      
+      // Map backend response to frontend display
       if (backendSeverity.includes('parah') || backendSeverity.includes('tinggi')) {
-        return 'Tinggi';
+        return 'Parah'; // Changed from 'Tinggi' to 'Parah'
       }
       if (backendSeverity.includes('sedang')) {
         return 'Sedang';
       }
+      if (backendSeverity.includes('ringan')) {
+        return 'Ringan';
+      }
     }
-
+    
+    // Fallback: calculate based on effects
     const maxPercentage = Math.max(
       ...effects.map(effect => parseInt(effect.percentage) || 0)
     );
     
-    if (maxPercentage > 60) return 'Tinggi';
+    if (maxPercentage > 60) return 'Parah'; // Changed from 'Tinggi'
     if (maxPercentage > 30) return 'Sedang';
     return 'Ringan';
   };
 
   const generateDiagnosis = (detailPrediction) => {
     if (detailPrediction.keparahan?.kelas) {
-      return `Analisis Kulit - ${detailPrediction.keparahan.kelas}`;
+      const severity = detailPrediction.keparahan.kelas;
+      return `Analisis Kulit - ${severity}`;
     }
     return 'Kondisi Kulit Terdeteksi';
   };
@@ -192,7 +243,7 @@ const Scan = () => {
       showError('Silakan upload foto dulu!');
       return;
     }
-
+    
     prepareForScan();
     
     try {
@@ -221,7 +272,7 @@ const Scan = () => {
     saveScanToHistory(response);
     const processedResults = processApiResponse(response);
     setScanResults(processedResults);
-
+    
     setTimeout(() => {
       setScanning(false);
       setScanCompleted(true);
@@ -232,9 +283,14 @@ const Scan = () => {
   const saveScanToHistory = (response) => {
     const scanDate = new Date().toISOString();
     const scanId = response._id || response.id || `scan_${Date.now()}`;
-    const existingDates = JSON.parse(localStorage.getItem('scanDates') || '{}');
+    
+    // Use in-memory storage instead of localStorage
+    if (!window.scanDates) {
+      window.scanDates = '{}';
+    }
+    const existingDates = JSON.parse(window.scanDates);
     existingDates[scanId] = scanDate;
-    localStorage.setItem('scanDates', JSON.stringify(existingDates));
+    window.scanDates = JSON.stringify(existingDates);
   };
 
   const handleScanError = (error) => {
@@ -384,7 +440,6 @@ const Scan = () => {
             {preview ? renderPreviewImage() : renderUploadPrompt()}
             {renderActionButtons()}
           </div>
-
           <input
             type="file"
             accept={SUPPORTED_FORMATS}
@@ -392,7 +447,6 @@ const Scan = () => {
             ref={fileInputRef}
             onChange={handleFileChange}
           />
-
           {renderScanButton()}
         </div>
 
@@ -402,6 +456,7 @@ const Scan = () => {
           scanning={scanning}
           scanResults={scanResults}
         />
+
         <Solution scanCompleted={scanCompleted} scanResults={scanResults} />
       </main>
       <Footer />
