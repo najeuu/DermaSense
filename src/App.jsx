@@ -10,9 +10,9 @@ import DetailArticle from './pages/ArticleDetail.jsx';
 import Profile from './pages/Profile.jsx';
 import History from './pages/History.jsx';
 
-// Komponen ProtectedRoute
+// ProtectedRoute
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token'); // atau cek dari cookies
+  const token = localStorage.getItem('token'); 
   if (!token) {
     return <Navigate to="/login" replace />;
   }
@@ -27,6 +27,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/article" element={<Article />} />
+        <Route path="/article/:id" element={<DetailArticle />} />
 
         {/* Protected */}
         <Route
@@ -34,22 +36,6 @@ function App() {
           element={
             <ProtectedRoute>
               <Scan />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/article"
-          element={
-            <ProtectedRoute>
-              <Article />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/article/:id"
-          element={
-            <ProtectedRoute>
-              <DetailArticle />
             </ProtectedRoute>
           }
         />
