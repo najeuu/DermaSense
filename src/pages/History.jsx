@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Eye, AlertCircle } from 'lucide-react';
+import { Calendar, Eye, AlertCircle, Lightbulb } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import Solution from '../components/Solution';
 
 const History = () => {
   const [histories, setHistories] = useState([]);
@@ -9,44 +10,40 @@ const History = () => {
   const [error, setError] = useState(null);
   const [selectedHistory, setSelectedHistory] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showSolution, setShowSolution] = useState(false); // State untuk show/hide solution
 
-const loadHistory = async () => {
-  try {
-    setLoading(true);
-    setError(null);
-
-    let apiHistory = [];
+  const loadHistory = async () => {
     try {
-      const { getHistory } = await import('../utils/axiosConfig');
-      const rawApiHistory = await getHistory();
-      if (Array.isArray(rawApiHistory)) apiHistory = rawApiHistory;
-    } catch {}
-
-    const processedApiData = apiHistory.map((item) => {
-      const mongoDate = new Date(parseInt(item._id.substring(0, 8), 16) * 1000);
-
-      return {
-        ...item,
-        createdAt: item.predictionDate || item.createdAt || mongoDate.toISOString(),
-        scanDate: item.predictionDate || item.createdAt || mongoDate.toISOString(),
-        kemerahanPercent: parseInt(item.kemerahanPercent) || 0,
-        gatalPercent: parseInt(item.gatalPercent) || 0,
-        ketebalanPercent: parseInt(item.ketebalanPercent) || 0,
-        likenifikasiPercent: parseInt(item.likenifikasiPercent) || 0,
-        keparahanResult: item.keparahanResult || { kelas: 'Ringan' },
-        summary: item.summary || 'Pemeriksaan kulit dari database',
-      };
-    });
-
-    processedApiData.sort((a, b) => new Date(b.scanDate) - new Date(a.scanDate));
-
-    setHistories(processedApiData);
-  } catch {
-    setError('Gagal memuat riwayat. Silakan coba lagi.');
-  } finally {
-    setLoading(false);
-  }
-};
+      setLoading(true);
+      setError(null);
+      let apiHistory = [];
+      try {
+        const { getHistory } = await import('../utils/axiosConfig');
+        const rawApiHistory = await getHistory();
+        if (Array.isArray(rawApiHistory)) apiHistory = rawApiHistory;
+      } catch {}
+      const processedApiData = apiHistory.map((item) => {
+        const mongoDate = new Date(parseInt(item._id.substring(0, 8), 16) * 1000);
+        return {
+          ...item,
+          createdAt: item.predictionDate || item.createdAt || mongoDate.toISOString(),
+          scanDate: item.predictionDate || item.createdAt || mongoDate.toISOString(),
+          kemerahanPercent: parseInt(item.kemerahanPercent) || 0,
+          gatalPercent: parseInt(item.gatalPercent) || 0,
+          ketebalanPercent: parseInt(item.ketebalanPercent) || 0,
+          likenifikasiPercent: parseInt(item.likenifikasiPercent) || 0,
+          keparahanResult: item.keparahanResult || { kelas: 'Ringan' },
+          summary: item.summary || 'Pemeriksaan kulit dari database',
+        };
+      });
+      processedApiData.sort((a, b) => new Date(b.scanDate) - new Date(a.scanDate));
+      setHistories(processedApiData);
+    } catch {
+      setError('Gagal memuat riwayat. Silakan coba lagi.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     loadHistory();
@@ -65,7 +62,6 @@ const loadHistory = async () => {
   const formatDate = (dateString) => {
     if (!dateString) return 'Tanggal tidak tersedia';
     if (typeof dateString === 'string' && dateString.includes('WIB')) return dateString;
-
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return 'Format tanggal tidak valid';
@@ -86,14 +82,14 @@ const loadHistory = async () => {
 
   const getSeverityColor = (severity) => {
     const kelas = severity?.toLowerCase() || '';
-    if (kelas.includes('parah') || kelas.includes('tinggi')) return 'bg-red-100 text-red-600';
+    if (kelas.includes('parah')) return 'bg-red-100 text-red-600';
     if (kelas.includes('sedang')) return 'bg-yellow-100 text-yellow-600';
     return 'bg-green-100 text-green-600';
   };
 
   const getSeverityText = (severity) => {
     const kelas = severity?.toLowerCase() || '';
-    if (kelas.includes('parah') || kelas.includes('tinggi')) return 'Tinggi';
+    if (kelas.includes('parah')) return 'Parah';
     if (kelas.includes('sedang')) return 'Sedang';
     return 'Ringan';
   };
@@ -101,11 +97,38 @@ const loadHistory = async () => {
   const viewDetail = (history) => {
     setSelectedHistory(history);
     setShowModal(true);
+    setShowSolution(false); // Reset solution view saat buka modal baru
+  };
+
+  const viewSolution = (history) => {
+    setSelectedHistory(history);
+    setShowModal(true);
+    setShowSolution(true); // Set untuk menampilkan solution
   };
 
   const closeModal = () => {
     setSelectedHistory(null);
     setShowModal(false);
+    setShowSolution(false);
+  };
+
+  // Function untuk mengkonversi severity dari history ke format yang dibutuhkan Solution
+  const convertSeverityForSolution = (history) => {
+    const severity = history.keparahanResult?.kelas || history.severity || 'Ringan';
+    return severity;
+  };
+
+  // Function untuk membuat scanResults object yang kompatibel dengan Solution
+  const createScanResultsForSolution = (history) => {
+    return {
+      severity: convertSeverityForSolution(history),
+      date: formatDate(history.scanDate || history.createdAt),
+      kemerahanPercent: history.kemerahanPercent,
+      gatalPercent: history.gatalPercent,
+      ketebalanPercent: history.ketebalanPercent,
+      likenifikasiPercent: history.likenifikasiPercent,
+      summary: history.summary
+    };
   };
 
   const totalCount = histories.length;
@@ -126,7 +149,6 @@ const loadHistory = async () => {
               dari waktu ke waktu.
             </p>
           </div>
-
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
               <AlertCircle size={20} />
@@ -139,7 +161,6 @@ const loadHistory = async () => {
               </button>
             </div>
           )}
-
           {loading ? (
             <div className="flex flex-col items-center py-20">
               <div className="w-12 h-12 border-4 border-primary border-t-transparent border-solid rounded-full animate-spin"></div>
@@ -210,7 +231,7 @@ const loadHistory = async () => {
                           className="flex-1 bg-primary text-white py-2 px-3 rounded-lg text-sm hover:bg-teal-600 transition flex items-center justify-center gap-1"
                         >
                           <Eye size={14} />
-                          Detail
+                          Lihat
                         </button>
                       </div>
                     </div>
@@ -222,99 +243,173 @@ const loadHistory = async () => {
         </div>
       </main>
 
-      {/* Modal Detail */}
+      {/* Modal Detail & Solution */}
       {showModal && selectedHistory && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-800">Detail Pemeriksaan</h2>
-                <button
-                  onClick={closeModal}
-                  className="text-gray-500 hover:text-gray-700 transition"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <img
-                    src={getImageUrl(selectedHistory.originalImagePath)}
-                    alt="Hasil scan detail"
-                    className="w-full rounded-xl"
-                  />
+          <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            {showSolution ? (
+              // Tampilkan Solution Component
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-gray-800">
+                    Solusi & Rekomendasi - {selectedHistory.diagnosis || 'Pemeriksaan Kulit'}
+                  </h2>
+                  <button
+                    onClick={closeModal}
+                    className="text-gray-500 hover:text-gray-700 transition text-xl px-2"
+                  >
+                    ✕
+                  </button>
                 </div>
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-lg text-gray-800">
-                      {selectedHistory.diagnosis || 'Hasil Analisis Kulit'}
-                    </h3>
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${getSeverityColor(
-                        selectedHistory.keparahanResult?.kelas || selectedHistory.severity,
-                      )}`}
-                    >
-                      {getSeverityText(
-                        selectedHistory.keparahanResult?.kelas || selectedHistory.severity,
-                      )}
-                    </span>
+                
+                {/* Tab Navigation */}
+                <div className="flex bg-gray-100 rounded-lg p-1 mb-6 max-w-md">
+                  <button
+                    onClick={() => setShowSolution(false)}
+                    className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition ${
+                      !showSolution 
+                        ? 'bg-white text-gray-900 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Detail Pemeriksaan
+                  </button>
+                  <button
+                    onClick={() => setShowSolution(true)}
+                    className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition ${
+                      showSolution 
+                        ? 'bg-white text-gray-900 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Solusi & Tips
+                  </button>
+                </div>
+                
+
+                
+                {/* Render Solution Component */}
+                <Solution 
+                  scanCompleted={true}
+                  scanResults={createScanResultsForSolution(selectedHistory)}
+                />
+              </div>
+            ) : (
+              // Tampilkan Detail View
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-gray-800">Detail Pemeriksaan</h2>
+                  <button
+                    onClick={closeModal}
+                    className="text-gray-500 hover:text-gray-700 transition text-xl px-2"
+                  >
+                    ✕
+                  </button>
+                </div>
+                
+                {/* Tab Navigation */}
+                <div className="flex bg-gray-100 rounded-lg p-1 mb-6 max-w-md">
+                  <button
+                    onClick={() => setShowSolution(false)}
+                    className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition ${
+                      !showSolution 
+                        ? 'bg-white text-gray-900 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Detail Pemeriksaan
+                  </button>
+                  <button
+                    onClick={() => setShowSolution(true)}
+                    className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition ${
+                      showSolution 
+                        ? 'bg-white text-gray-900 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Solusi & Tips
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <img
+                      src={getImageUrl(selectedHistory.originalImagePath)}
+                      alt="Hasil scan detail"
+                      className="w-full rounded-xl"
+                    />
                   </div>
-                  <p className="text-gray-500 text-sm mb-4">
-                    {formatDate(selectedHistory.createdAt)}
-                  </p>
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="text-left text-gray-500 text-sm border-b">
-                        <th className="py-2 font-medium">Effect</th>
-                        <th className="py-2 font-medium text-primary">Persentase</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-gray-700">
-                      <tr className="border-b border-gray-100">
-                        <td className="py-3">Kemerahan</td>
-                        <td className="py-3 text-primary font-medium">
-                          {selectedHistory.kemerahanPercent}%
-                        </td>
-                      </tr>
-                      <tr className="border-b border-gray-100">
-                        <td className="py-3">Pruritus</td>
-                        <td className="py-3 text-primary font-medium">
-                          {selectedHistory.gatalPercent}%
-                        </td>
-                      </tr>
-                      <tr className="border-b border-gray-100">
-                        <td className="py-3">Ketebalan</td>
-                        <td className="py-3 text-primary font-medium">
-                          {selectedHistory.ketebalanPercent}%
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-3">Likenifikasi</td>
-                        <td className="py-3 text-primary font-medium">
-                          {selectedHistory.likenifikasiPercent}%
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                    <h4 className="font-medium text-gray-800 mb-2">Ringkasan:</h4>
-                    <p className="text-sm text-gray-600">{selectedHistory.summary}</p>
-                  </div>
-                  <div className="flex gap-3 mt-4">
-                    <button
-                      onClick={closeModal}
-                      className="flex-1 bg-gray-100 text-gray-600 py-2 px-4 rounded-lg hover:bg-gray-200 transition"
-                    >
-                      Tutup
-                    </button>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold text-lg text-gray-800">
+                        {selectedHistory.diagnosis || 'Hasil Analisis Kulit'}
+                      </h3>
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${getSeverityColor(
+                          selectedHistory.keparahanResult?.kelas || selectedHistory.severity,
+                        )}`}
+                      >
+                        {getSeverityText(
+                          selectedHistory.keparahanResult?.kelas || selectedHistory.severity,
+                        )}
+                      </span>
+                    </div>
+                    <p className="text-gray-500 text-sm mb-4">
+                      {formatDate(selectedHistory.createdAt)}
+                    </p>
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="text-left text-gray-500 text-sm border-b">
+                          <th className="py-2 font-medium">Effect</th>
+                          <th className="py-2 font-medium text-primary">Persentase</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-gray-700">
+                        <tr className="border-b border-gray-100">
+                          <td className="py-3">Kemerahan</td>
+                          <td className="py-3 text-primary font-medium">
+                            {selectedHistory.kemerahanPercent}%
+                          </td>
+                        </tr>
+                        <tr className="border-b border-gray-100">
+                          <td className="py-3">Pruritus</td>
+                          <td className="py-3 text-primary font-medium">
+                            {selectedHistory.gatalPercent}%
+                          </td>
+                        </tr>
+                        <tr className="border-b border-gray-100">
+                          <td className="py-3">Ketebalan</td>
+                          <td className="py-3 text-primary font-medium">
+                            {selectedHistory.ketebalanPercent}%
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-3">Likenifikasi</td>
+                          <td className="py-3 text-primary font-medium">
+                            {selectedHistory.likenifikasiPercent}%
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                      <h4 className="font-medium text-gray-800 mb-2">Ringkasan:</h4>
+                      <p className="text-sm text-gray-600">{selectedHistory.summary}</p>
+                    </div>
+                    <div className="flex gap-3 mt-6 pt-4 border-t border-gray-100">
+                      <button
+                        onClick={closeModal}
+                        className="flex-1 bg-gray-100 text-gray-600 py-3 px-4 rounded-lg hover:bg-gray-200 transition font-medium"
+                      >
+                        Tutup
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
-
       <Footer />
     </div>
   );
