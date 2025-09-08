@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 // Constants
 const SEVERITY_LEVELS = {
   RINGAN: 'ringan',
@@ -7,12 +8,14 @@ const SEVERITY_LEVELS = {
   PARAH: 'parah',
   TIDAK_TERDETEKSI: 'tidak terdeteksi'
 };
+
 const SEVERITY_COLORS = {
   [SEVERITY_LEVELS.RINGAN]: 'green',
   [SEVERITY_LEVELS.SEDANG]: 'yellow',
   [SEVERITY_LEVELS.PARAH]: 'red',
   [SEVERITY_LEVELS.TIDAK_TERDETEKSI]: 'gray'
 };
+
 // Content data
 const CONTENT_MAP = {
   [SEVERITY_LEVELS.RINGAN]: {
@@ -78,9 +81,7 @@ const CONTENT_MAP = {
         { text: 'Alergen Makanan', color: 'bg-blue-200 text-blue-900' },
         { text: 'Debu & Tungau', color: 'bg-green-200 text-green-900' },
         { text: 'Stress Berkepanjangan', color: 'bg-yellow-200 text-yellow-900' },
-        { text: 'Perubahan Hormon', color: 'bg-purple-200 text-purple-900' },
-        { text: 'Polusi Udara', color: 'bg-red-200 text-red-900' },
-        { text: 'Produk Kimia', color: 'bg-orange-200 text-orange-900' }
+        { text: 'Perubahan Hormon', color: 'bg-purple-200 text-purple-900' }
       ]
     },
     gejala: {
@@ -89,8 +90,7 @@ const CONTENT_MAP = {
         { text: 'Kemerahan Jelas', color: 'bg-red-200 text-red-900' },
         { text: 'Gatal Berkala', color: 'bg-orange-200 text-orange-900' },
         { text: 'Kulit Kering & Pecah', color: 'bg-yellow-200 text-yellow-900' },
-        { text: 'Bengkak Ringan', color: 'bg-purple-200 text-purple-900' },
-        { text: 'Rasa Terbakar', color: 'bg-pink-200 text-pink-900' }
+        { text: 'Bengkak Ringan', color: 'bg-purple-200 text-purple-900' }
       ]
     },
     rekomendasiDosis: {
@@ -99,8 +99,7 @@ const CONTENT_MAP = {
         { text: 'Steroid Topikal Sedang', color: 'bg-purple-200 text-purple-900' },
         { text: 'Antihistamin 1x/hari', color: 'bg-indigo-200 text-indigo-900' },
         { text: 'Ceramide Cream 3x', color: 'bg-pink-200 text-pink-900' },
-        { text: 'Emollient Kuat', color: 'bg-blue-200 text-blue-900' },
-        { text: 'Calcineurin Inhibitor', color: 'bg-green-200 text-green-900' }
+        { text: 'Emollient Kuat', color: 'bg-blue-200 text-blue-900' }
       ]
     },
     caraMengatasi: {
@@ -137,9 +136,7 @@ const CONTENT_MAP = {
         { text: 'Infeksi Bakteri Sekunder', color: 'bg-red-300 text-red-900' },
         { text: 'Allergen Berat & Persisten', color: 'bg-orange-300 text-orange-900' },
         { text: 'Stress Kronis Berat', color: 'bg-yellow-300 text-yellow-900' },
-        { text: 'Faktor Genetik Kuat', color: 'bg-purple-300 text-purple-900' },
-        { text: 'Gangguan Imun', color: 'bg-red-300 text-red-900' },
-        { text: 'Komplikasi Sistemik', color: 'bg-pink-300 text-pink-900' }
+        { text: 'Faktor Genetik Kuat', color: 'bg-purple-300 text-purple-900' }
       ]
     },
     gejala: {
@@ -148,9 +145,7 @@ const CONTENT_MAP = {
         { text: 'Kemerahan Parah & Menyebar', color: 'bg-red-400 text-red-900' },
         { text: 'Gatal Intens Tidak Terkendali', color: 'bg-orange-400 text-orange-900' },
         { text: 'Penebalan Kulit Signifikan', color: 'bg-yellow-400 text-yellow-900' },
-        { text: 'Likenifikasi Ekstensif', color: 'bg-purple-400 text-purple-900' },
-        { text: 'Erosi & Ekskoriasi', color: 'bg-red-400 text-red-900' },
-        { text: 'Infeksi Sekunder', color: 'bg-pink-400 text-pink-900' }
+        { text: 'Likenifikasi Ekstensif', color: 'bg-purple-400 text-purple-900' }
       ]
     },
     rekomendasiDosis: {
@@ -159,9 +154,7 @@ const CONTENT_MAP = {
         { text: 'Steroid Poten Kelas I-II', color: 'bg-red-300 text-red-900' },
         { text: 'Immunosuppressant Sistemik', color: 'bg-purple-300 text-purple-900' },
         { text: 'Antibiotik Topikal + Oral', color: 'bg-indigo-300 text-indigo-900' },
-        { text: 'Barrier Repair Intensif', color: 'bg-pink-300 text-pink-900' },
-        { text: 'Antihistamin Dosis Tinggi', color: 'bg-blue-300 text-blue-900' },
-        { text: 'Phototherapy', color: 'bg-green-300 text-green-900' }
+        { text: 'Barrier Repair Intensif', color: 'bg-pink-300 text-pink-900' }
       ]
     },
     caraMengatasi: {
@@ -170,8 +163,7 @@ const CONTENT_MAP = {
         { text: 'Terapi Medis Intensif', color: 'bg-red-300 text-red-900' },
         { text: 'Wet Wrapping Therapy', color: 'bg-blue-300 text-blue-900' },
         { text: 'Eliminasi Total Trigger', color: 'bg-orange-300 text-orange-900' },
-        { text: 'Hospitalisasi Jika Perlu', color: 'bg-purple-300 text-purple-900' },
-        { text: 'Perawatan Wound Care', color: 'bg-pink-300 text-pink-900' }
+        { text: 'Hospitalisasi Jika Perlu', color: 'bg-purple-300 text-purple-900' }
       ]
     },
     tips: {
@@ -180,8 +172,7 @@ const CONTENT_MAP = {
         { text: 'Skincare Extra Gentle', color: 'bg-blue-300 text-blue-900' },
         { text: '100% Cotton Clothing', color: 'bg-green-300 text-green-900' },
         { text: 'Humidity Control 45-55%', color: 'bg-teal-300 text-teal-900' },
-        { text: 'Avoid Hot Water', color: 'bg-red-300 text-red-900' },
-        { text: 'Psychological Support', color: 'bg-purple-300 text-purple-900' }
+        { text: 'Avoid Hot Water', color: 'bg-red-300 text-red-900' }
       ]
     },
     saran: {
@@ -221,6 +212,7 @@ const CONTENT_MAP = {
     }
   }
 };
+
 // Section configuration
 const SOLUTION_SECTIONS = [
   {
@@ -260,15 +252,18 @@ const SOLUTION_SECTIONS = [
     articlePath: 'saran'
   }
 ];
+
 // Helper functions
 const getSeverityColor = (severity) => {
   const severityLower = severity.toLowerCase();
   return SEVERITY_COLORS[severityLower] || 'green';
 };
+
 const getContentBySeverity = (severity) => {
   const severityLower = severity.toLowerCase();
   return CONTENT_MAP[severityLower] || CONTENT_MAP[SEVERITY_LEVELS.RINGAN];
 };
+
 const getSeverityColorClasses = (color) => {
   const colorMap = {
     red: 'bg-red-200 text-red-800',
@@ -278,6 +273,7 @@ const getSeverityColorClasses = (color) => {
   };
   return colorMap[color] || colorMap.green;
 };
+
 const getSectionColorClasses = (color) => {
   const colorMap = {
     red: 'bg-gradient-to-br from-red-50 to-red-100 border-red-200',
@@ -287,6 +283,7 @@ const getSectionColorClasses = (color) => {
   };
   return colorMap[color] || colorMap.green;
 };
+
 const getButtonColorClasses = (color) => {
   const colorMap = {
     red: 'bg-red-100 text-red-700 hover:bg-red-200',
@@ -296,6 +293,7 @@ const getButtonColorClasses = (color) => {
   };
   return colorMap[color] || colorMap.green;
 };
+
 // Sub-components
 const SeverityBadge = ({ severity, color, scanResults }) => (
   <div className="text-center mb-6">
@@ -311,9 +309,10 @@ const SeverityBadge = ({ severity, color, scanResults }) => (
     )}
   </div>
 );
-const PillList = ({ pills, maxDisplay = 4 }) => (
+
+const PillList = ({ pills }) => (
   <div className="flex flex-wrap gap-2">
-    {pills.slice(0, maxDisplay).map((pill, index) => (
+    {pills.map((pill, index) => (
       <span
         key={index}
         className={`px-2 py-1 rounded-full text-xs font-medium ${pill.color}`}
@@ -321,16 +320,12 @@ const PillList = ({ pills, maxDisplay = 4 }) => (
         {pill.text}
       </span>
     ))}
-    {pills.length > maxDisplay && (
-      <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600">
-        +{pills.length - maxDisplay} lainnya
-      </span>
-    )}
   </div>
 );
+
 const SolutionSection = ({ section, content, color, severity }) => {
   const isNotDetected = severity === SEVERITY_LEVELS.TIDAK_TERDETEKSI;
-
+  
   return (
     <div
       className={`rounded-lg p-4 border-2 transition-all hover:shadow-md ${getSectionColorClasses(color)}`}
@@ -355,6 +350,7 @@ const SolutionSection = ({ section, content, color, severity }) => {
     </div>
   );
 };
+
 const HistoryButton = ({ color, onClick }) => (
   <div className="text-center">
     <button
@@ -365,26 +361,33 @@ const HistoryButton = ({ color, onClick }) => (
     </button>
   </div>
 );
+
 // Main component
 const Solution = ({ scanCompleted, scanResults }) => {
   const navigate = useNavigate();
   const [showTestControls] = useState(false);
   const [testSeverity] = useState('Parah');
+
   const getSeverityToUse = () => {
     if (scanCompleted && scanResults?.severity) {
       return scanResults.severity;
     }
     return showTestControls ? testSeverity : null;
   };
+
   const severityToUse = getSeverityToUse();
+
   if (!severityToUse) {
     return null;
   }
+
   const content = getContentBySeverity(severityToUse);
   const severityColor = getSeverityColor(severityToUse);
+
   const handleViewHistory = () => {
     navigate('/history');
   };
+
   return (
     <div className="max-w-6xl mx-auto mb-8 p-4">
       <div className="bg-white rounded-lg shadow-lg p-6">
@@ -411,4 +414,5 @@ const Solution = ({ scanCompleted, scanResults }) => {
     </div>
   );
 };
+
 export default Solution;
