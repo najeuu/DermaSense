@@ -52,20 +52,23 @@ agridetect/
 │
 ├── src/                        # Kode sumber utama
 │   ├── assets/                 # Berisi gambar, ikon, atau file statis lainnya
-│   ├── layouts/                # Layout halaman
+│   ├── components/             # Komponen UI yang bisa dipakai ulang 
+│   ├── data/                   # Data dummy / konfigurasi statis (misalnya JSON, daftar artikel, dsb)
+│   ├── hooks/                  # Custom hooks React 
+│   ├── layouts/                # Layout halaman (misalnya MainLayout, AuthLayout)
 │   ├── pages/                  # Halaman seperti Home, Scan, Article, Login, Register, dll
 │   ├── utils/                  # Fungsi-fungsi utilitas
 │   ├── App.css                 # File styling global untuk komponen App
 │   ├── App.jsx                 # Komponen utama aplikasi
-│   └── index.css               # File CSS utama
-│   ├── main.jsx                # Entry point React
+│   ├── index.css               # File CSS utama
+│   └── main.jsx                # Entry point React
 │
-├── index.html                 # Template HTML
-├── eslint.config.js           # Konfigurasi ESLint untuk menjaga konsistensi kode
-├── tailwind.config.js         # Konfigurasi Tailwind CSS
-├── vite.config.js             # Konfigurasi Vite
-├── package.json               # Informasi proyek dan dependensi
-└── README.md                  # Dokumentasi Proyek
+├── index.html                  # Template HTML
+├── eslint.config.js            # Konfigurasi ESLint untuk menjaga konsistensi kode
+├── tailwind.config.js          # Konfigurasi Tailwind CSS
+├── vite.config.js              # Konfigurasi Vite
+├── package.json                # Informasi proyek dan dependensi
+└── README.md                   # Dokumentasi Proyek
 ```
 
 ---
