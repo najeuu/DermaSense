@@ -30,10 +30,17 @@ const Login = () => {
         throw new Error('Please fill in all fields');
       }
 
-      await authService.login({
+      const res = await authService.login({
         email: formData.email,
         password: formData.password,
       });
+
+      const token = res.data?.token;
+      if (!token) throw new Error('Token tidak ditemukan dari server');
+
+      const expiry = Date.now() + 60 * 60 * 1000; // 1 jam
+      localStorage.setItem('token', token);
+      localStorage.setItem('tokenExpiry', expiry.toString());
 
       navigate('/');
     } catch (err) {
@@ -59,7 +66,7 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Right Form - Full width on mobile */}
+        {/* Right Form */}
         <div className="w-full md:w-1/2 p-6 flex flex-col justify-center">
           <div className="max-w-sm mx-auto w-full">
             <h1 className="text-xl md:text-2xl font-bold text-primary mb-1 text-center">Login!</h1>
@@ -105,12 +112,6 @@ const Login = () => {
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
-              </div>
-
-              <div className="flex justify-end">
-                <a href="#" className="text-xs text-secondary hover:text-primary transition-colors">
-                  Forgot Password?
-                </a>
               </div>
 
               <button

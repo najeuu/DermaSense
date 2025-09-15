@@ -7,7 +7,7 @@ export async function captureFromCamera() {
   return new Promise(async (resolve, reject) => {
     let stream = null;
     let currentFacingMode = 'environment'; // Default ke kamera belakang
-    
+
     try {
       // Fungsi untuk mendapatkan stream kamera
       const getStream = async (facingMode) => {
@@ -34,26 +34,34 @@ export async function captureFromCamera() {
       video.srcObject = stream;
       video.autoplay = true;
       video.playsInline = true;
-      
+
       // Buat canvas untuk capture
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
-      
+
       // Tunggu video ready
       video.onloadedmetadata = () => {
         // Set canvas size sama dengan video
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         // Buat modal untuk preview kamera
-        createCameraModal(video, canvas, context, stream, currentFacingMode, getStream, resolve, reject);
+        createCameraModal(
+          video,
+          canvas,
+          context,
+          stream,
+          currentFacingMode,
+          getStream,
+          resolve,
+          reject,
+        );
       };
-      
+
       video.onerror = (err) => {
         console.error('Video error:', err);
         stopStream(stream);
         reject(new Error('Gagal memuat video dari kamera'));
       };
-      
     } catch (err) {
       console.error('Camera access error:', err);
       stopStream(stream);
@@ -71,7 +79,16 @@ export async function captureFromCamera() {
 /**
  * Membuat modal untuk preview kamera
  */
-function createCameraModal(video, canvas, context, stream, currentFacingMode, getStream, resolve, reject) {
+function createCameraModal(
+  video,
+  canvas,
+  context,
+  stream,
+  currentFacingMode,
+  getStream,
+  resolve,
+  reject,
+) {
   // Buat modal container
   const modal = document.createElement('div');
   modal.style.cssText = `
@@ -125,7 +142,8 @@ function createCameraModal(video, canvas, context, stream, currentFacingMode, ge
       <path d="M17 2L22 7L17 12M22 7H4M7 22L2 17L7 12M2 17H20"/>
     </svg>
   `;
-  switchBtn.title = currentFacingMode === 'environment' ? 'Switch ke Kamera Depan' : 'Switch ke Kamera Belakang';
+  switchBtn.title =
+    currentFacingMode === 'environment' ? 'Switch ke Kamera Depan' : 'Switch ke Kamera Belakang';
   switchBtn.style.cssText = `
     position: absolute;
     top: 15px;
@@ -150,7 +168,7 @@ function createCameraModal(video, canvas, context, stream, currentFacingMode, ge
     switchBtn.style.background = 'rgba(0, 0, 0, 0.8)';
     switchBtn.style.transform = 'scale(1.05)';
   };
-  
+
   switchBtn.onmouseleave = () => {
     switchBtn.style.background = 'rgba(0, 0, 0, 0.6)';
     switchBtn.style.transform = 'scale(1)';
@@ -214,7 +232,7 @@ function createCameraModal(video, canvas, context, stream, currentFacingMode, ge
     captureBtn.style.background = '#0F766E';
     captureBtn.style.transform = 'translateY(-2px)';
   };
-  
+
   captureBtn.onmouseleave = () => {
     captureBtn.style.background = '#14B8A6';
     captureBtn.style.transform = 'translateY(0)';
@@ -224,45 +242,47 @@ function createCameraModal(video, canvas, context, stream, currentFacingMode, ge
     cancelBtn.style.background = '#DC2626';
     cancelBtn.style.transform = 'translateY(-2px)';
   };
-  
+
   cancelBtn.onmouseleave = () => {
     cancelBtn.style.background = '#EF4444';
     cancelBtn.style.transform = 'translateY(0)';
   };
 
   // Event handlers
-  
+
   // Switch kamera function
   switchBtn.onclick = async () => {
     try {
       switchBtn.disabled = true;
       switchBtn.style.opacity = '0.5';
-      
+
       // Stop current stream
       stopStream(stream);
-      
+
       // Toggle facing mode
       const newFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
-      
+
       // Get new stream
       const newStream = await getStream(newFacingMode);
-      
+
       // Update video source
       video.srcObject = newStream;
-      
+
       // Update variables
       stream = newStream;
       currentFacingMode = newFacingMode;
-      
+
       // Update tooltip
-      switchBtn.title = currentFacingMode === 'environment' ? 'Switch ke Kamera Depan' : 'Switch ke Kamera Belakang';
-      
+      switchBtn.title =
+        currentFacingMode === 'environment'
+          ? 'Switch ke Kamera Depan'
+          : 'Switch ke Kamera Belakang';
+
       // Update canvas size when video loads
       video.onloadedmetadata = () => {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
       };
-      
     } catch (err) {
       console.error('Switch camera error:', err);
       alert('Gagal mengganti kamera: ' + err.message);
@@ -305,17 +325,17 @@ function createCameraModal(video, canvas, context, stream, currentFacingMode, ge
       document.removeEventListener('keydown', handleKeyDown);
     }
   };
-  
+
   document.addEventListener('keydown', handleKeyDown);
 
   // Assemble modal
   videoContainer.appendChild(video);
   videoContainer.appendChild(switchBtn);
   videoContainer.appendChild(buttonContainer);
-  
+
   buttonContainer.appendChild(cancelBtn);
   buttonContainer.appendChild(captureBtn);
-  
+
   modal.appendChild(videoContainer);
 
   // Add to DOM
@@ -323,22 +343,22 @@ function createCameraModal(video, canvas, context, stream, currentFacingMode, ge
 
   // Prevent body scroll when modal is open
   document.body.style.overflow = 'hidden';
-  
+
   // Cleanup function untuk restore body scroll
   const originalCleanup = () => {
     document.body.style.overflow = 'auto';
     document.removeEventListener('keydown', handleKeyDown);
   };
-  
+
   // Override existing cleanup calls
   const originalCaptureClick = captureBtn.onclick;
   const originalCancelClick = cancelBtn.onclick;
-  
+
   captureBtn.onclick = () => {
     originalCleanup();
     originalCaptureClick();
   };
-  
+
   cancelBtn.onclick = () => {
     originalCleanup();
     originalCancelClick();

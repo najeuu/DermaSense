@@ -5,7 +5,7 @@ const Result = ({ resultImage, scanCompleted, scanning, scanResults }) => {
   return (
     <div className="w-full max-w-4xl bg-white rounded-2xl shadow-md p-6">
       <h2 className="font-semibold text-lg text-gray-800 mb-4">The Result</h2>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Image Preview */}
         <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 flex items-center justify-center text-gray-400 min-h-[200px]">
@@ -49,7 +49,7 @@ const Result = ({ resultImage, scanCompleted, scanning, scanResults }) => {
                 </span>
               </div>
               <p className="text-gray-500 text-sm mb-4">{scanResults.date}</p>
-              
+
               {/* Results table */}
               {scanResults.effects && scanResults.effects.length > 0 ? (
                 <table className="w-full border-collapse">
@@ -71,8 +71,8 @@ const Result = ({ resultImage, scanCompleted, scanning, scanResults }) => {
               ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-600">
-                    {scanResults.severity === 'Tidak Terdeteksi' 
-                      ? 'Tidak ada kondisi kulit yang terdeteksi pada gambar ini.' 
+                    {scanResults.severity === 'Tidak Terdeteksi'
+                      ? 'Tidak ada kondisi kulit yang terdeteksi pada gambar ini.'
                       : 'Data efek tidak tersedia.'}
                   </p>
                 </div>

@@ -20,7 +20,6 @@ const Register = () => {
   const [error, setError] = useState('');
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
   const validatePassword = (password) => password.length >= 6;
 
   const handleChange = (e) => {
@@ -69,6 +68,7 @@ const Register = () => {
 
       const response = await authService.register(payload);
       console.log('✅ Registrasi Berhasil:', response.data);
+
       navigate('/login', {
         state: { message: '✅ Registrasi berhasil! Silakan login.' },
       });
@@ -110,20 +110,7 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-3xl flex flex-col md:flex-row overflow-hidden">
-        {/* Left Illustration */}
-        <div className="hidden md:flex w-1/2 bg-[#C1F5DD] flex-col items-center justify-center p-6">
-          <img
-            src={registerIllustration}
-            alt="Sign up illustration"
-            className="w-full max-w-[220px] h-auto object-contain mb-4"
-          />
-          <p className="text-secondary text-center text-sm">
-            Silahkan sign up dulu sebelum{' '}
-            <span className="font-semibold text-primary">lanjut ke page selanjutnya</span>.
-          </p>
-        </div>
-
-        {/* Right Form */}
+        {/* Left Form */}
         <div className="w-full md:w-1/2 p-6 flex flex-col justify-center">
           <div className="max-w-sm mx-auto w-full">
             <h1 className="text-xl md:text-2xl font-bold text-primary mb-1 text-center">
@@ -301,6 +288,19 @@ const Register = () => {
               </Link>
             </p>
           </div>
+        </div>
+
+        {/* Right Illustration */}
+        <div className="hidden md:flex w-1/2 bg-[#C1F5DD] flex-col items-center justify-center p-6">
+          <img
+            src={registerIllustration}
+            alt="Sign up illustration"
+            className="w-full max-w-[220px] h-auto object-contain mb-4"
+          />
+          <p className="text-secondary text-center text-sm">
+            Silahkan sign up dulu sebelum{' '}
+            <span className="font-semibold text-primary">lanjut ke page selanjutnya</span>.
+          </p>
         </div>
       </div>
     </div>
